@@ -60,7 +60,6 @@ echo "✅ Backend is healthy!"
 echo ""
 echo "🎨 Starting frontend on http://localhost:$FRONTEND_PORT ..."
 cd "$PROJECT_ROOT/frontend"
-export PATH="$PATH:/opt/homebrew/bin"
 npm run dev &
 FRONTEND_PID=$!
 
