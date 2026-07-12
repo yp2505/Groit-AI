@@ -1,0 +1,22 @@
+defaults:
+  resolver_models: ["llama3-8b-8192", "llama-3.1-8b-instant", "llama-3.3-70b-versatile"]
+  schema_search_limit: 100
+  destructive_keywords: ["delete", "remove", "drop", "merge", "archive", "revoke"]
+  prefer_keywords:
+    send_actions:
+      prefer: ["send", "post", "deliver"]
+      avoid: ["draft", "save"]
+
+toolkits:
+  gmail:
+    action_synonyms:
+      send_email: ["send", "email", "message", "mail"]
+    requires_explicit_recipient: true
+  slack:
+    action_synonyms:
+      send_message: ["notify", "post", "message", "send"]
+    requires_explicit_recipient: false
+  notion:
+    action_synonyms:
+      create_page: ["create", "add", "new", "page", "note"]
+    requires_explicit_recipient: false

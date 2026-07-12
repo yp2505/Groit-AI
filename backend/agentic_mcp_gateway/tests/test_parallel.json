@@ -1,0 +1,41 @@
+{
+  "workflow_id": "test-parallel",
+  "name": "Parallel Execution Test",
+  "description": "Tests concurrent execution B and C are spawned after A.",
+  "nodes": [
+    {
+      "id": "A",
+      "name": "Initialize Dataset",
+      "tool": "data",
+      "action": "load",
+      "depends_on": [],
+      "mock_output": { "db_id": "XY99" }
+    },
+    {
+      "id": "B",
+      "name": "Process Vision model",
+      "tool": "vision",
+      "action": "process",
+      "inputs": { "db": "{{A.output.db_id}}" },
+      "depends_on": ["A"],
+      "mock_output": { "status": "ok" }
+    },
+    {
+      "id": "C",
+      "name": "Process NLP model",
+      "tool": "nlp",
+      "action": "process",
+      "inputs": { "db": "{{A.output.db_id}}" },
+      "depends_on": ["A"],
+      "mock_output": { "status": "ok" }
+    },
+    {
+      "id": "D",
+      "name": "Aggregate",
+      "tool": "aggregator",
+      "action": "compile",
+      "depends_on": ["B", "C"],
+      "mock_output": { "done": true }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "dag": {
+    "workflow_name": "Quick Verification",
+    "nodes": [
+      {
+        "id": "node_1",
+        "tool": "github",
+        "action": "get_repository",
+        "params": {
+          "owner": "preritashukla",
+          "repo": "Tic-Tech-Toe"
+        },
+        "depends_on": []
+      },
+      {
+        "id": "node_2",
+        "tool": "slack",
+        "action": "send_message",
+        "params": {
+          "channel": "C0AS582T3B7",
+          "message": "Verifying full system from dashboard..."
+        },
+        "depends_on": [
+          "node_1"
+        ]
+      }
+    ]
+  },
+  "auto_approve": true
+}

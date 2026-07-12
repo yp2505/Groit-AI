@@ -1,0 +1,29 @@
+{
+  "workflow_id": "test-retry",
+  "name": "Failure + Retry Test",
+  "description": "Demonstrates exponential backoff on simulated failures.",
+  "nodes": [
+    {
+      "id": "A",
+      "name": "Unstable Operation",
+      "tool": "github_mcp",
+      "action": "link_issue",
+      "inputs": { "force_fail": true },
+      "depends_on": [],
+      "retry": {
+        "max_attempts": 3,
+        "backoff_factor": 1.5,
+        "initial_delay": 0.5
+      },
+      "mock_output": { "linked": true }
+    },
+    {
+      "id": "B",
+      "name": "Dependent Operation",
+      "tool": "slack_mcp",
+      "action": "post",
+      "depends_on": ["A"],
+      "mock_output": { "done": true }
+    }
+  ]
+}

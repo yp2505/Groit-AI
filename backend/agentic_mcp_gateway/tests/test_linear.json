@@ -1,0 +1,34 @@
+{
+  "workflow_id": "test-linear",
+  "name": "Linear Execution Test",
+  "description": "Tests sequential execution with A -> B -> C",
+  "nodes": [
+    {
+      "id": "A",
+      "name": "Step 1",
+      "tool": "math_tool",
+      "action": "generate",
+      "inputs": {},
+      "depends_on": [],
+      "mock_output": { "val": "1" }
+    },
+    {
+      "id": "B",
+      "name": "Step 2",
+      "tool": "math_tool",
+      "action": "add",
+      "inputs": { "prev": "{{A.output.val}}" },
+      "depends_on": ["A"],
+      "mock_output": { "val": "2" }
+    },
+    {
+      "id": "C",
+      "name": "Step 3",
+      "tool": "math_tool",
+      "action": "print",
+      "inputs": { "prev": "{{B.output.val}}" },
+      "depends_on": ["B"],
+      "mock_output": { "done": true }
+    }
+  ]
+}

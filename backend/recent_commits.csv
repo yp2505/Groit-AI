@@ -1,0 +1,31 @@
+Commit Hash,Author,Date,Message
+5e475e0,Grishma Makwana,2026-04-12,feat: stabilize Agentic MCP gateway integrations across backend and frontend
+5373193,Grishma Makwana,2026-04-11,Merge changes from upstream-ui/main into local main
+06ccb83,Grishma Makwana,2026-04-11,Merge live integration backend with updated UI changes
+a695431,Grishma Makwana,2026-04-11,Merge branch 'main' from new remote and resolve conflicts
+929a7e5,Tejas Singh,2026-04-11,"feat: production-ready MCP integration with real Jira, GitHub, Slack, and Sheets support"
+51c3a73,Grishma Makwana,2026-04-11,"chore: Native execution integrations for Slack, GitHub API, and Sheets auth"
+c1321b4,preritashukla,2026-04-11,Validation
+1b5401e,Grishma Makwana,2026-04-11,Initial commit
+4f1c06f,preritashukla,2026-04-11,Login page and Connection page
+dbdbab5,Hemaksh,2026-04-11,Jira Live
+10184d1,preritashukla,2026-04-11,Slack Live
+b05d163,preritashukla,2026-04-11,Slack Live
+666bd97,Tejas Singh,2026-04-11,"feat: update frontend UI with ThemeToggle, sheets mock, and database mock"
+25a585b,Tejas Singh,2026-04-11,feat: stabilize workflow engine and add native slack simulation
+ffa4171,Tejas Singh,2026-04-11,"fix: resolve github mcp owner/repo parsing, add fallback robust mock actions, and fix frontend API retry to gracefully handle server restarts"
+1924bce,Grishma Makwana,2026-04-11,Cleanup: Remove redundant 'models' directory in favor of 'api_schemas'
+12015b1,Grishma Makwana,2026-04-11,Merge remote-tracking branch 'origin/main' and resolve conflicts by prioritizing local UI enhancements and api_schemas naming
+43dc26d,Grishma Makwana,2026-04-11,Remove sensitive credentials from repo
+3a0ca4b,Grishma Makwana,2026-04-11,Resolved merge conflict in llm.py
+a5188b5,Grishma Makwana,2026-04-11,Spreadsheet is live says GM-10
+1943d77,Tejas Singh,2026-04-11,feat: implement result visibility and AI summarization tool
+36d1198,Tejas Singh,2026-04-11,feat: implement result visibility and AI summarization tool
+7a176cb,Tejas Singh,2026-04-11,feat: improve GitHub integration and prompt engine placeholder avoidance
+f6512e2,Tejas Singh,2026-04-11,feat: improve GitHub integration and prompt engine placeholder avoidance
+56fd069,Grishma Makwana,2026-04-11,Improvements by me
+23d04a5,Grishma Makwana,2026-04-11,improvements GM_10
+6120beb,Grishma Makwana,2026-04-11,Merge pull request #3 from preritashukla/add-frontend
+0dfc119,Grishma Makwana,2026-04-11,Merge pull request #3 from preritashukla/add-frontend
+9d726a7,Tejas Singh,2026-04-11,"fix(dashboard): resolve active workflow polling leak, add UX quick prompts, and simulate real network wait duration for mock executor"
+51551d6,Tejas Singh,2026-04-11,"fix(dashboard): resolve active workflow polling leak, add UX quick prompts, and simulate real network wait duration for mock executor"

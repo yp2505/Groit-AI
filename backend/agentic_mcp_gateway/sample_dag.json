@@ -1,0 +1,99 @@
+{
+  "workflow_id": "wf-hackathon-demo-01",
+  "name": "Cross-Platform Issue Resolver",
+  "description": "Creates Jira ticket, runs parallel GitHub and Slack linking, waits for human approval to alter the production budget sheet.",
+  "nodes": [
+    {
+      "id": "task_1",
+      "name": "Create Jira Ticket",
+      "tool": "jira_mcp",
+      "action": "create_issue",
+      "inputs": {
+        "summary": "Fix Auth Gateway Bug",
+        "priority": "High"
+      },
+      "depends_on": [],
+      "requires_approval": false,
+      "retry": {
+        "max_attempts": 3,
+        "backoff_factor": 1.5,
+        "initial_delay": 1.0,
+        "timeout": 5
+      },
+      "mock_output": {
+        "ticket_id": "PRJ-8822"
+      }
+    },
+    {
+      "id": "task_2",
+      "name": "Create Branch",
+      "tool": "github",
+      "action": "create_branch",
+      "inputs": {
+        "owner": "GM-10",
+        "repo": "Agentic-MCP-Handled",
+        "branch_name": "feature/fix-auth-bug",
+        "from_branch": "main"
+      },
+      "depends_on": [
+        "task_1"
+      ],
+      "requires_approval": false,
+      "retry": {
+        "max_attempts": 3,
+        "backoff_factor": 2.0,
+        "initial_delay": 1.0,
+        "timeout": 10
+      },
+      "mock_output": {
+        "success": true,
+        "repo_name": "GM-10/Agentic-MCP-Handled"
+      }
+    },
+    {
+      "id": "task_3",
+      "name": "Ping Engineer on Slack",
+      "tool": "slack_mcp",
+      "action": "send_message",
+      "inputs": {
+        "channel": "#all-daiict",
+        "message": "Jira {{task_1.output.ticket_id}} was created for the Auth bug."
+      },
+      "depends_on": [
+        "task_1"
+      ],
+      "requires_approval": false,
+      "retry": {
+        "max_attempts": 2,
+        "initial_delay": 0.5
+      },
+      "mock_output": {
+        "delivered": true,
+        "timestamp": 1684562000
+      }
+    },
+    {
+      "id": "task_4",
+      "name": "Update Billing Sheet",
+      "tool": "sheets_mcp",
+      "action": "append_row",
+      "inputs": {
+        "row_data": {
+          "jira": "{{task_1.output.ticket_id}}",
+          "status": "Escalated to GitHub"
+        }
+      },
+      "depends_on": [
+        "task_3"
+      ],
+      "requires_approval": false,
+      "retry": {
+        "max_attempts": 1,
+        "timeout": 15
+      },
+      "mock_output": {
+        "row_updated": 42
+      }
+    }
+  ]
+}

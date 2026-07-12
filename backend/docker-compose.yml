@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  jira-mock:
+    build: ./mocks/jira
+    ports:
+      - "8001:8001"
+
+  github-mock:
+    build: ./mocks/github
+    ports:
+      - "8002:8002"
+
+  slack-mock:
+    build: ./mocks/slack
+    ports:
+      - "8003:8003"
+
+  sheets-mock:
+    build: ./mocks/sheets
+    ports:
+      - "8004:8004"

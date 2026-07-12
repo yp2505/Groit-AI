@@ -1,0 +1,25 @@
+{
+  "workflow_id": "test-hitl",
+  "name": "Human-In-The-Loop Test",
+  "description": "Tests an operation explicitly requiring human intervention.",
+  "nodes": [
+    {
+      "id": "safe_action",
+      "name": "Generate Schema",
+      "tool": "data",
+      "action": "draft",
+      "depends_on": [],
+      "mock_output": { "model": "schema_v1" }
+    },
+    {
+      "id": "dangerous_action",
+      "name": "Deploy DB Schema",
+      "tool": "db",
+      "action": "migrate",
+      "inputs": { "model": "{{safe_action.output.model}}" },
+      "requires_approval": true,
+      "depends_on": ["safe_action"],
+      "mock_output": { "migrated": true }
+    }
+  ]
+}

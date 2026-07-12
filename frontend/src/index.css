@@ -1,0 +1,235 @@
+@import '@xyflow/react/dist/style.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* ─── Design Tokens ──────────────────────────────────────────────────────────── */
+
+@layer base {
+  :root {
+    /* Light Mode HSL variables */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 214 32% 91%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 214 32% 91%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 214 32% 91%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214 32% 85%;
+    --input: 214 32% 91%;
+    --ring: 217 91% 60%;
+    --radius: 0.75rem;
+
+    --node-pending: 215 16% 47%;
+    --node-running: 217 91% 60%;
+    --node-done: 142 71% 45%;
+    --node-failed: 0 84% 60%;
+    --node-approval: 38 92% 50%;
+  }
+
+  .dark {
+    /* Dark Mode HSL variables */
+    --background: 222 47% 6%;
+    --foreground: 213 31% 91%;
+    --card: 222 47% 9%;
+    --card-foreground: 213 31% 91%;
+    --popover: 222 47% 9%;
+    --popover-foreground: 213 31% 91%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 6%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 55%;
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 63% 51%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 20%;
+    --input: 217 33% 20%;
+    --ring: 217 91% 60%;
+
+    --node-pending: 220 13% 46%;
+    --node-running: 217 91% 60%;
+    --node-done: 142 71% 45%;
+    --node-failed: 0 84% 60%;
+    --node-approval: 38 92% 50%;
+  }
+
+  * {
+    @apply border-border;
+    box-sizing: border-box;
+  }
+
+  html, body, #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* ─── Custom Scrollbar ───────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: hsl(217, 33%, 22%); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(217, 33%, 30%); }
+
+/* ─── Glow Utilities ─────────────────────────────────────────────────────────── */
+
+.glow-cyan   { box-shadow: 0 0 20px 2px rgba(6, 182, 212, 0.4); }
+.glow-purple { box-shadow: 0 0 20px 2px rgba(168, 85, 247, 0.4); }
+.glow-pink   { box-shadow: 0 0 20px 2px rgba(236, 72, 153, 0.4); }
+
+/* ─── Background Grid ────────────────────────────────────────────────────────── */
+
+.grid-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(hsl(217 33% 15% / 0.25) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(217 33% 15% / 0.25) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 20%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 20%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Animations ──────────────────────────────────────────────────────────────── */
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { animation: fadeInUp 0.5s ease-out both; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%       { transform: translateY(-6px) rotate(3deg); }
+}
+.ai-icon-spin { animation: iconFloat 3s ease-in-out infinite; }
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px hsl(217 91% 60% / 0.3); }
+  50%       { box-shadow: 0 0 24px hsl(217 91% 60% / 0.6), 0 0 48px hsl(217 91% 60% / 0.2); }
+}
+.node-running { animation: pulse-glow 2s ease-in-out infinite; }
+
+@keyframes approval-pulse {
+  0%, 100% { box-shadow: 0 0 8px hsl(38 92% 50% / 0.3); }
+  50%       { box-shadow: 0 0 24px hsl(38 92% 50% / 0.5), 0 0 48px hsl(38 92% 50% / 0.15); }
+}
+.node-approval { animation: approval-pulse 2s ease-in-out infinite; }
+
+@keyframes glowShift {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+
+@keyframes dotPulse {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40%           { opacity: 1;   transform: scale(1.2); }
+}
+
+/* ─── AI Icon Glow ───────────────────────────────────────────────────────────── */
+
+.ai-icon-glow {
+  box-shadow:
+    0 0 30px hsl(217 91% 60% / 0.25),
+    0 0 60px hsl(217 91% 60% / 0.1),
+    0 0 120px hsl(217 91% 60% / 0.05);
+}
+
+/* ─── Input Glow ─────────────────────────────────────────────────────────────── */
+
+.input-glow-wrapper {
+  background: hsl(217 33% 20%);
+  box-shadow: 0 4px 30px hsl(217 91% 60% / 0.06);
+}
+.input-glow-active {
+  background: linear-gradient(135deg, hsl(217 91% 60% / 0.5), hsl(270 91% 60% / 0.3), hsl(217 91% 60% / 0.5));
+  background-size: 200% 200%;
+  animation: glowShift 3s ease infinite;
+  box-shadow: 0 4px 40px hsl(217 91% 60% / 0.15);
+}
+
+/* ─── Submit Button ──────────────────────────────────────────────────────────── */
+
+.submit-btn {
+  background: linear-gradient(135deg, hsl(217, 91%, 60%), hsl(240, 91%, 65%));
+  box-shadow: 0 4px 16px hsl(217 91% 60% / 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.submit-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 24px hsl(217 91% 60% / 0.5);
+}
+.submit-btn-disabled {
+  background: hsl(217, 33%, 18%);
+  box-shadow: none;
+  cursor: default;
+}
+.submit-btn-disabled:hover { transform: none; box-shadow: none; }
+
+/* ─── Loading Dots ───────────────────────────────────────────────────────────── */
+
+.loading-dots .dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: hsl(217, 91%, 60%);
+  animation: dotPulse 1.4s ease-in-out infinite;
+}
+.loading-dots .dot:nth-child(2) { animation-delay: 0.2s; }
+.loading-dots .dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* ─── React Flow Overrides ───────────────────────────────────────────────────── */
+
+.react-flow__node {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+.react-flow__edge-path       { stroke-width: 2 !important; }
+.react-flow__arrowhead polyline { stroke-width: 1.5 !important; }
+.react-flow__background      { background-color: hsl(222 47% 6%) !important; }
+.react-flow__controls button {
+  background: hsl(222, 47%, 12%) !important;
+  border-color: hsl(217, 33%, 20%) !important;
+  color: hsl(215, 20%, 55%) !important;
+  fill: hsl(215, 20%, 55%) !important;
+}
+.react-flow__controls button:hover {
+  background: hsl(222, 47%, 16%) !important;
+  color: hsl(213, 31%, 91%) !important;
+  fill: hsl(213, 31%, 91%) !important;
+}
+
+/* ─── Mobile ─────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .react-flow__controls { display: none !important; }
+}

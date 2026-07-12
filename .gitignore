@@ -1,0 +1,64 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Backend
+.env
+__pycache__/
+*.pyc
+.next/
+backend/credentials/service_account.json
+backend/credentials/
+.env
+node_modules/
+*.egg-info/
+dist/
+build/
+# Data
+backend/workflows_db.json
+backend/scratch/
+backend/jira_issues.json
+backend/slack_messages.json
+backend/slack_history.json
+backend/mock_database.json
+
+# Environment
+.env
+.env.local
+.venv/
+venv/
+__pycache__/
+
+# Temporary test / draft files
+backend/all_gmail_tools.txt
+backend/draft_execute.json
+backend/draft_plan.json
+backend/error.txt
+backend/plan_output.json
+backend/pyrefly.toml
+backend/schemas.txt
+pyrefly.toml
+backend/test_*.py
+backend/agentic_mcp_gateway/tests/test_composio_dynamic.json
+
