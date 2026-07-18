@@ -6,7 +6,7 @@ import { Eye, EyeOff, CheckCircle2, AlertTriangle } from "lucide-react";
 
 
 function ToolCard({ tool, icon, label, description, fields, isOAuth = false, authUrl = '' }) {
-  const { tools, connect, reset } = useTools();
+  const { tools, setToolConnected, setToolDisconnected } = useTools();
   const { user } = useAppUser();
   const isDeveloper = user?.role === 'developer';
 
@@ -40,11 +40,11 @@ function ToolCard({ tool, icon, label, description, fields, isOAuth = false, aut
     }
 
     if (isConnecting) return;
-    connect(tool, JSON.stringify(values));
+    setToolConnected(tool);
   };
 
   const handleReset = () => {
-    reset(tool);
+    setToolDisconnected(tool);
     setValues(Object.fromEntries(fields.map(f => [f.key, ''])));
   };
 

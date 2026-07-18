@@ -9,3 +9,4 @@ groq
 gspread>=6.1.0
 google-auth>=2.20.0
 types-PyYAML>=6.0.12
+gradio_client

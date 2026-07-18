@@ -37,7 +37,7 @@ const TOOLS = [
 
 const ConnectTools = () => {
   const navigate = useNavigate();
-  const { tools, allConnected, refreshFromBackend } = useTools();
+  const { tools, allConnected } = useTools();
   const { user } = useAppUser();
   const [composioStatus, setComposioStatus] = useState<string[]>([]);
   const [isConnecting, setIsConnecting] = useState<string | null>(null);
@@ -157,7 +157,7 @@ const ConnectTools = () => {
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <span style={{ fontSize: 12, fontWeight: 700, color: "#4ade80" }}>{progressPct}%</span>
                 <button
-                  onClick={refreshFromBackend}
+                  onClick={() => window.location.reload()}
                   disabled={isLoading}
                   style={{
                     background: "none", border: "1px solid #30363d", borderRadius: 6,
