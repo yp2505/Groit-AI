@@ -1,21 +1,11 @@
-# Agentic MCP Gateway — Dependencies
-fastapi>=0.115.6
-uvicorn[standard]>=0.34.0
-pydantic>=2.10.4
-python-dotenv>=1.0.1
-groq>=0.25.0
-sse-starlette>=2.2.1
-httpx>=0.28.1
-motor>=3.3.0
+fastapi
+uvicorn
+pydantic
+pydantic-settings
+requests
 composio
-gspread
-google-auth
-slack-sdk
-PyYAML
-# ── LangChain Plan-and-Execute Pipeline (v2 endpoint) ───────────────────────
-# NOTE: langchain-groq declares groq<1.0.0 but the installed groq==1.5.0 is
-# fully API-compatible at runtime. Install with: pip install langchain-groq --no-deps
-langchain
-langchain-groq
-langchain-openai
-composio-langchain
+python-dotenv
+groq
+gspread>=6.1.0
+google-auth>=2.20.0
+types-PyYAML>=6.0.12

@@ -175,20 +175,23 @@ async def list_connected_toolkits(user_id: str) -> list[str]:
     try:
         client = _get_client()
 
-        # In the new SDK, use client.connected_accounts.list(user_ids=[user_id])
         def _fetch():
             try:
-                res = client.connected_accounts.list(user_ids=[user_id])
+                res = client.connected_accounts.list(user_ids=[user_id]).items
                 slugs = []
-                for conn in res.items:
-                    dump = getattr(conn, "model_dump", lambda: {})() if hasattr(conn, "model_dump") else getattr(conn, "dict", lambda: {})()
-                    toolkit_info = dump.get("toolkit", {}) or {}
+                for conn in res:
+                    dump = conn.model_dump() if hasattr(conn, "model_dump") else getattr(conn, "dict", lambda: {})()
+                    
+                    # Only return toolkits that the user has fully authenticated
+                    status = dump.get("status", "").upper()
+                    if status != "ACTIVE":
+                        continue
+
+                    toolkit_info = dump.get("toolkit", {}) or getattr(conn, "toolkit", {})
                     slug = (
-                        toolkit_info.get("slug")
+                        toolkit_info.get("slug") if isinstance(toolkit_info, dict) else getattr(toolkit_info, "slug", None)
                         or getattr(conn, "app_name", None)
                         or getattr(conn, "appName", None)
-                        or getattr(conn, "appUniqueId", None)
-                        or getattr(conn, "app_unique_id", None)
                     )
                     if slug:
                         slugs.append(slug.lower())
@@ -240,24 +243,55 @@ async def composio_llm_dispatch(
     """
     client = _get_client()
 
+    # ── Normalize tool slug to the exact Composio toolkit name ────────────────
+    COMPOSIO_SLUG_ALIASES: dict[str, str] = {
+        # Jira variants
+        "jira":             "jira",
+        "atlassian_jira":   "jira",
+        "atlassian-jira":   "jira",
+        "jirasoftware":     "jira",
+        # Google Sheets variants
+        "sheets":           "googlesheets",
+        "google_sheet":     "googlesheets",
+        "google_sheets":    "googlesheets",
+        "googlesheets":     "googlesheets",
+        "google-sheets":    "googlesheets",
+        # Gmail variants
+        "gmail":            "gmail",
+        "google_mail":      "gmail",
+        # Calendar variants
+        "googlecalendar":   "googlecalendar",
+        "google_calendar":  "googlecalendar",
+        "google-calendar":  "googlecalendar",
+        "calendar":         "googlecalendar",
+        # GitHub variants
+        "github":           "github",
+        "git_hub":          "github",
+        # Slack variants
+        "slack":            "slack",
+        # Notion variants
+        "notion":           "notion",
+    }
+    normalized_slug = COMPOSIO_SLUG_ALIASES.get(tool_slug.lower().replace("-", "_"), tool_slug)
+    logger.info(f"composio_llm_dispatch: slug '{tool_slug}' → normalized '{normalized_slug}'")
+
     # Load YAML Config
     config = _get_config()
     defaults = config.get("defaults", {})
-    tool_config = config.get("toolkits", {}).get(tool_slug, {})
+    tool_config = config.get("toolkits", {}).get(normalized_slug, {})
 
     # ── Step 1: Fetch live tool schemas scoped to this toolkit ──────────────────
     try:
         raw_schemas = await get_composio_tools(
             user_id=user_id,
-            toolkits=[tool_slug]
+            toolkits=[normalized_slug]
         )
-        # Client-side filtering to bypass flawed server-side search
         safe_action = action or ""
         clean_action = safe_action.lower().replace("-", "_")
-        synonyms = [s.lower().replace("-", "_") for s in tool_config.get("action_synonyms", {}).get(safe_action, [])]
+        synonyms = [s.lower().replace("-", "_") for s in tool_config.get("action_synonyms", {}).get(clean_action, [])]
         
         tool_schemas = []
-        slug_clean = tool_slug.lower().replace("-", "_")
+        slug_clean = normalized_slug.lower().replace("-", "_")
         
         for schema in raw_schemas:
             if isinstance(schema, dict) and "function" in schema:
@@ -293,17 +327,14 @@ async def composio_llm_dispatch(
         }
 
     if not tool_schemas:
-        msg = (
-            f"No Composio tool schemas found for toolkit '{tool_slug}' "
-            f"(user={user_id}). Seamless mock mode active."
-        )
-        logger.warning(f"composio_llm_dispatch: {msg}")
-        # Seamless Mock Fallback: if not connected, simulate success to keep pipeline flowing
         return {
-            "status": "success",
-            "tool": tool_slug,
-            "action": action or "mock_action",
-            "output": {"summary": f"Simulated success for {tool_slug} action: {action}"}
+            "status": "error",
+            "tool": normalized_slug,
+            "action": action,
+            "error": (
+                f"No Composio tool schemas found for '{normalized_slug}' (user={user_id}). "
+                f"Please connect '{normalized_slug}' via the Available Toolkits panel first."
+            ),
         }
 
     logger.info(
@@ -327,7 +358,9 @@ async def composio_llm_dispatch(
         f"Using the '{tool_slug}' toolkit, please perform the following action:\n"
         f"{node_intent}\n\n"
         f"Parameter hints from the workflow planner: {json.dumps(params)}\n\n"
-        f"Select the most appropriate tool and provide all required arguments."
+        f"CRITICAL: You MUST strictly select a valid tool name from the provided tool schemas. "
+        f"DO NOT use the fuzzy action name from the prompt if it does not exist in the schemas. "
+        f"Map the requested action to the absolute closest valid tool name in the schemas.\n"
         f"{rule_str}"
     )
 
@@ -400,6 +433,27 @@ async def composio_llm_dispatch(
             user_id=user_id,
             dangerously_skip_version_check=True,
         )
+        # Check if Composio returned a logical error even if the HTTP request succeeded
+        is_successful = True
+        error_msg = None
+        
+        if isinstance(output, dict):
+            is_successful = output.get("successful", True)
+            error_msg = output.get("error")
+        elif hasattr(output, "successful"):
+            is_successful = getattr(output, "successful")
+            error_msg = getattr(output, "error", None)
+            
+        if not is_successful:
+            logger.error(f"composio_llm_dispatch: execute '{chosen_slug}' failed logically: {error_msg}")
+            return {
+                "status": "error",
+                "tool": tool_slug,
+                "action": chosen_slug,
+                "error": error_msg or "Unknown Composio execution error",
+                "output": output,
+            }
+
         logger.info(f"composio_llm_dispatch: '{chosen_slug}' executed successfully")
         return {
             "status": "success",
@@ -409,17 +463,6 @@ async def composio_llm_dispatch(
         }
     except Exception as exec_err:
         error_msg = getattr(exec_err, "message", None) or repr(exec_err) or str(exec_err)
-        
-        # Seamless Mock Fallback: if not connected, simulate success to keep pipeline flowing
-        if "No connected account found" in error_msg or "ConnectedAccountNotFound" in error_msg:
-            logger.warning(f"composio_llm_dispatch: '{chosen_slug}' hit ConnectedAccountNotFound. Seamless mock mode active.")
-            return {
-                "status": "success",
-                "tool": tool_slug,
-                "action": chosen_slug,
-                "output": {"summary": f"Mock execution successful for {chosen_slug}. (Real execution bypassed: account not connected)."}
-            }
-
         logger.error(f"composio_llm_dispatch: execute '{chosen_slug}' failed: {error_msg}")
         return {
             "status": "error",
@@ -445,6 +488,26 @@ async def execute_composio_action(tool_slug: str, action: str, inputs: dict, use
             user_id=user_id,
             dangerously_skip_version_check=True,
         )
+
+        is_successful = True
+        error_msg = None
+        
+        if isinstance(output, dict):
+            is_successful = output.get("successful", True)
+            error_msg = output.get("error")
+        elif hasattr(output, "successful"):
+            is_successful = getattr(output, "successful")
+            error_msg = getattr(output, "error", None)
+            
+        if not is_successful:
+            logger.error(f"execute_composio_action '{action}' failed logically: {error_msg}")
+            return {
+                "status": "error",
+                "tool": tool_slug,
+                "action": action,
+                "error": error_msg or "Unknown Composio execution error",
+                "output": output,
+            }
 
         return {
             "status": "success",

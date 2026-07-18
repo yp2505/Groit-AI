@@ -26,8 +26,8 @@ def get_sheets_client(context: Optional[Dict] = None):
             logger.warning(f"Sheets API: User OAuth token invalid or expired ({e}). Falling back to service account.")
             # Fall through to service account logic
 
-    # Priority 2: Service Account (from env)
-    creds_env = os.getenv("GOOGLE_SHEETS_CREDENTIALS_JSON")
+    # Priority 2: Service Account (from context or env)
+    creds_env = ctx_creds.get("GOOGLE_SHEETS_CREDENTIALS_JSON") or os.getenv("GOOGLE_SHEETS_CREDENTIALS_JSON")
     
     scopes = [
         'https://www.googleapis.com/auth/spreadsheets',
@@ -132,10 +132,11 @@ async def execute_sheets(action: str, params: Dict[str, Any], context: Optional[
     Bridges the async executor with synchronous gspread calls.
     """
     try:
+        action = action.lower().strip()
         # Attempt initialization (might use user token from context)
         client = await asyncio.to_thread(get_sheets_client, context)
         ctx_creds = (context or {}).get("credentials", {}).get("sheets", {}) or (context or {}).get("credentials", {}).get("google", {})
-        sheet_id = ctx_creds.get("spreadsheet_id") or os.getenv("GOOGLE_SHEETS_ID")
+        sheet_id = ctx_creds.get("GOOGLE_SHEETS_ID") or os.getenv("GOOGLE_SHEETS_ID")
         
         if not sheet_id:
             raise ValueError("Spreadsheet ID Missing: Please provide a Spreadsheet ID in the 'Connect Tools' dashboard.")
@@ -274,17 +275,14 @@ async def execute_sheets(action: str, params: Dict[str, Any], context: Optional[
 
     except Exception as e:
         error_msg = str(e)
-        logger.warning(f"Sheets execution failed: {error_msg} — TRIGGERING EMERGENCY DEMO FALLBACK")
-        sheet_name = params.get("sheet_name", "Sheet1")
+        if not error_msg and getattr(e, "__cause__", None):
+            error_msg = str(e.__cause__)
+        if not error_msg:
+            error_msg = repr(e)
+        logger.error(f"Sheets execution failed: {error_msg}")
         return {
-            "status": "success",
+            "status": "error",
             "tool": "sheets",
             "action": action,
-            "output": {
-                "sheet_name": sheet_name,
-                "rows_added": 1,
-                "row_data": [params.get("row_data") or params],
-                "message": f"Simulated sheet action '{action}' success",
-                "note": f"⚠️ This result was simulated because Google Sheets credentials were not configured. Reason: {error_msg}"
-            }
+            "error": error_msg
         }

@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Terminal } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Layout from '@/components/Layout';
-
+import { getActiveWorkflows } from '../lib/api';
 const API_BASE = '/api'; // Proxied through Vite → localhost:8000
 
 interface LogEntry {
@@ -25,15 +25,12 @@ export default function LogsPage() {
     const pollLogs = async () => {
       while (active) {
         try {
-          // Fetch all active workflows status to generate real logs
-          const res = await fetch(`${API_BASE}/active-workflows`);
-          if (res.ok) {
-            const data = await res.json();
-            setConnected(true);
-            const now = new Date().toISOString().split('T')[1].slice(0, -1);
-            
-            if (data.workflows && Array.isArray(data.workflows)) {
-              for (const wf of data.workflows) {
+          const activeWorkflows = await getActiveWorkflows();
+          setConnected(true);
+          const now = new Date().toISOString().split('T')[1].slice(0, -1);
+          
+          if (activeWorkflows && Array.isArray(activeWorkflows)) {
+            for (const wf of activeWorkflows) {
                 for (const node of (wf.nodes || [])) {
                   const key = `${wf.workflow_id}-${node.id}-${node.status}`;
                   if (!seenMessages.has(key)) {
@@ -76,11 +73,8 @@ export default function LogsPage() {
                 }
               }
             }
-          } else {
+          } catch (e) {
             setConnected(false);
-          }
-        } catch {
-          setConnected(false);
         }
         await new Promise(r => setTimeout(r, 1000));
       }

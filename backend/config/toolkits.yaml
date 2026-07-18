@@ -1,22 +1,35 @@
 defaults:
-  resolver_models: ["llama3-8b-8192", "llama-3.1-8b-instant", "llama-3.3-70b-versatile"]
-  schema_search_limit: 100
-  destructive_keywords: ["delete", "remove", "drop", "merge", "archive", "revoke"]
-  prefer_keywords:
-    send_actions:
-      prefer: ["send", "post", "deliver"]
-      avoid: ["draft", "save"]
+  prefer_keywords: {}
+  resolver_models:
+    - "llama-3.3-70b-versatile"
+    - "gemma2-9b-it"
 
 toolkits:
-  gmail:
-    action_synonyms:
-      send_email: ["send", "email", "message", "mail"]
-    requires_explicit_recipient: true
   slack:
     action_synonyms:
-      send_message: ["notify", "post", "message", "send"]
-    requires_explicit_recipient: false
-  notion:
+      send_message:
+        - "chat_post_message"
+        - "post_message"
+  googlesheets:
     action_synonyms:
-      create_page: ["create", "add", "new", "page", "note"]
-    requires_explicit_recipient: false
+      append_row:
+        - "create_spreadsheet_row"
+        - "spreadsheets_values_append"
+  jira:
+    action_synonyms:
+      create_task:
+        - "create_issue"
+      create_issue:
+        - "create_issue"
+  github:
+    action_synonyms:
+      create_issue:
+        - "create_an_issue"
+  googlecalendar:
+    action_synonyms:
+      create_event:
+        - "create_event"
+  gmail:
+    action_synonyms:
+      send_email:
+        - "send_email"

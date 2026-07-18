@@ -14,9 +14,10 @@ import { ToolsProvider } from "@/context/ToolsContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 import Landing from "./pages/Landing";
+import PricingPage from "./pages/PricingPage";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
-import ConnectTools from "./pages/ConnectTools";
+
 import AgenticChatUI from "./AgenticChatUI";
 import ManagerLayout from "./components/manager/ManagerLayout";
 import NotFound from "./pages/NotFound";
@@ -55,6 +56,7 @@ const App = () => (
               <Routes>
                 {/* Public */}
                 <Route path="/" element={<Landing />} />
+                <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/login/*" element={<LoginPage />} />
                 <Route path="/sign-up/*" element={<SignUpPage />} />
                 
@@ -62,10 +64,8 @@ const App = () => (
                 <Route path="/sign-in/*" element={<Navigate to="/login" replace />} />
                 <Route path="/signup/*" element={<Navigate to="/sign-up" replace />} />
 
-                {/* Post-login: connect tools */}
-                <Route path="/connect-tools" element={
-                  <ProtectedRoute><ConnectTools /></ProtectedRoute>
-                } />
+                {/* Redirect connect-tools to dashboard */}
+                <Route path="/connect-tools" element={<Navigate to="/dashboard" replace />} />
 
                 {/* Protected — role-aware dashboard */}
                 <Route path="/dashboard" element={

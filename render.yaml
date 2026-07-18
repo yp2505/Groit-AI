@@ -1,0 +1,26 @@
+services:
+  # ─── BACKEND (FastAPI) ───
+  - type: web
+    name: groit-backend
+    env: python
+    rootDir: backend
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+      # Add all your sensitive environment variables (API keys, etc.) manually in the Render dashboard later!
+
+  # ─── FRONTEND (React/Vite) ───
+  - type: web
+    name: groit-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: "npm install && npm run build"
+    staticPublishPath: "./dist"
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: groit-backend
+          envVarKey: RENDER_EXTERNAL_URL

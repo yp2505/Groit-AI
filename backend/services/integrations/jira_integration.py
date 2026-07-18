@@ -14,9 +14,9 @@ def get_jira_auth() -> tuple:
         raise Exception("Jira Credentials Missing: Please connect your Jira account in the 'Connect Tools' dashboard.")
     return (email, api_token)
 
-def get_jira_domain() -> str:
-    # Check JIRA_BASE_URL first (original support), then fallback to JIRA_DOMAIN
-    domain = os.getenv("JIRA_BASE_URL") or os.getenv("JIRA_DOMAIN", "your-domain.atlassian.net")
+def get_jira_domain(context: Optional[Dict] = None) -> str:
+    ctx_creds = (context or {}).get("credentials", {}).get("jira", {})
+    domain = ctx_creds.get("JIRA_BASE_URL") or os.getenv("JIRA_BASE_URL") or os.getenv("JIRA_DOMAIN", "your-domain.atlassian.net")
     if not domain.startswith("http"):
         domain = f"https://{domain}"
     return domain.rstrip("/")
@@ -42,8 +42,8 @@ async def call_jira_api(method: str, endpoint: str, data: Optional[Dict] = None,
         logger.info(f"Jira API: Using OAuth flow for {endpoint}")
     else:
         # Basic Auth Mode
-        email = ctx_creds.get("email") or os.getenv("JIRA_EMAIL")
-        token = ctx_creds.get("api_token") or os.getenv("JIRA_API_TOKEN")
+        email = ctx_creds.get("JIRA_EMAIL") or os.getenv("JIRA_EMAIL")
+        token = ctx_creds.get("JIRA_API_TOKEN") or os.getenv("JIRA_API_TOKEN")
         if not email or not token:
             logger.warning("Jira Credentials Missing — TRIGGERING EMERGENCY DEMO FALLBACK")
             return {
@@ -59,7 +59,7 @@ async def call_jira_api(method: str, endpoint: str, data: Optional[Dict] = None,
             }
             
         auth = (email, token)
-        domain = get_jira_domain()
+        domain = get_jira_domain(context)
         url = f"{domain}/rest/api/3{endpoint}"
         logger.info(f"Jira API: Using Basic Auth flow for {endpoint}")
     
@@ -142,7 +142,7 @@ async def get_issue(issue_id: str, context: Optional[Dict] = None) -> Dict:
     }
 
 async def create_issue(project_key: str, summary: str, description: str = "", issue_type: str = "Task", context: Optional[Dict] = None) -> Dict:
-    payload = {
+    payload: Dict[str, Any] = {
         "fields": {
             "project": {"key": project_key},
             "summary": summary,
@@ -182,6 +182,7 @@ async def update_issue(issue_id: str, status: Optional[str] = None, summary: Opt
 
 async def execute_jira(action: str, params: Dict[str, Any], context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     try:
+        action = action.lower().strip()
         if action == "get_issue" or action == "get_ticket":
             issue_id = (
                 params.get("issue_id") or 
@@ -194,10 +195,11 @@ async def execute_jira(action: str, params: Dict[str, Any], context: Optional[Di
             output = await get_issue(issue_id, context=context)
             return {"status": "success", "output": output}
             
-        elif action == "create_issue" or action == "create_ticket":
+        elif action in ("create_issue", "create_ticket", "create_task"):
             # Always prioritize configured project key over LLM hallucination
-            default_project = os.environ.get("JIRA_PROJECT_KEY") or "PROJ"
-            project_key = default_project if os.environ.get("JIRA_PROJECT_KEY") else (params.get("project_key") or params.get("project") or params.get("projectKey") or default_project)
+            ctx_creds = (context or {}).get("credentials", {}).get("jira", {})
+            default_project = ctx_creds.get("JIRA_PROJECT_KEY") or os.environ.get("JIRA_PROJECT_KEY") or "PROJ"
+            project_key = (params.get("project_key") or params.get("project") or params.get("projectKey") or default_project)
             summary = params.get("summary") or params.get("title") or params.get("text", "New Issue")
             description = params.get("description") or params.get("body") or ""
             issue_type = params.get("issue_type") or params.get("issuetype") or params.get("type") or "Task"

@@ -39,83 +39,78 @@ export async function fetchWithRetry(
   );
 }
 
-// ─── API Functions ───────────────────────────────────────────────────────────
+// In-memory status store to adapt synchronous backend to async polling frontend
+const inMemoryStatus: Record<string, WorkflowStatus> = {};
 
 export async function createWorkflow(
   input: string,
   credentials?: Record<string, any>
 ): Promise<{ workflow_id: string }> {
-  let resolvedId: string;
+  let resolvedId = `wf-${Date.now()}`;
 
   if (USE_MOCK) {
-    // Simulate network delay
     await new Promise((r) => setTimeout(r, 1500));
-
-    // Choose based on input text instead of pure random
-    const lowered = input.toLowerCase();
-    let baseId = 'wf-jira-incident'; // default
-    if (
-      lowered.includes('competitor') ||
-      lowered.includes('price') ||
-      lowered.includes('scrape') ||
-      lowered.includes('discord')
-    ) {
-      baseId = 'wf-competitor-monitor';
-    } else if (
-      lowered.includes('pdf') ||
-      lowered.includes('invoice') ||
-      lowered.includes('trello') ||
-      lowered.includes('sheets')
-    ) {
-      baseId = 'wf-pdf-invoices';
-    } else if (
-      lowered.includes('aws') ||
-      lowered.includes('cloudwatch') ||
-      lowered.includes('alarm')
-    ) {
-      baseId = 'wf-aws-cloudwatch';
-    } else if (lowered.includes('bug') || lowered.includes('jira') || lowered.includes('github')) {
-      baseId = 'wf-jira-incident';
-    } else {
-      const cleanInput = input.replace(/[^a-zA-Z0-9 ]/g, '').substring(0, 60);
-      baseId = 'wf-dynamic-' + encodeURIComponent(cleanInput);
-    }
-
-    // Make ID unique to allow parallel executions
-    resolvedId = `${baseId}-${Date.now()}`;
     resetSimulation(resolvedId);
   } else {
-    const planRes = await fetchWithRetry(`${API_BASE}/plan`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_input: input }),
-    });
-    if (!planRes.ok) throw new Error(`Planning failed: ${planRes.statusText}`);
-    const planData = await planRes.json();
-    
-    if (!planData.success || !planData.dag) {
-      throw new Error(planData.errors?.join(', ') || 'Failed to generate execution plan');
-    }
+    // Set initial running state
+    inMemoryStatus[resolvedId] = {
+      workflow_id: resolvedId,
+      title: input,
+      nodes: [{ id: 'parser', title: 'Parsing Intention', status: 'running', tool: 'system' }],
+      edges: []
+    };
 
-    // Step 2: Execute the generated DAG
-    const execRes = await fetch(`${API_BASE}/execute`, {
+    // Execute the backend call asynchronously so we don't block the UI
+    fetch(`${API_BASE}/v3/execute`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        dag: planData.dag,
-        auto_approve: true, // Default to true for zero-latency hackathon demo
-        dry_run: false,
-        credentials: credentials || {}
-      }),
+      body: JSON.stringify({ user_input: input })
+    })
+    .then(async res => {
+      if (!res.ok) throw new Error(`Execution failed: ${res.statusText}`);
+      const data = await res.json();
+      
+      const nodes = [];
+      const edges = [];
+      
+      if (data.dag && data.dag.nodes) {
+        data.dag.nodes.forEach((node: any) => {
+          const result = data.execution?.results?.[node.id] || {};
+          nodes.push({
+            id: node.id,
+            title: `${node.tool} - ${node.action}`,
+            status: result.status === 'success' ? 'success' : (result.status === 'error' ? 'failed' : 'pending'),
+            tool: node.tool.toLowerCase(),
+            result: result.output ? JSON.stringify(result.output) : undefined,
+            error: result.error
+          });
+          
+          if (node.depends_on) {
+            node.depends_on.forEach((dep: string) => {
+              edges.push({ source: dep, target: node.id });
+            });
+          }
+        });
+      }
+      
+      inMemoryStatus[resolvedId] = {
+        workflow_id: resolvedId,
+        title: data.dag?.workflow_name || input,
+        nodes,
+        edges
+      };
+    })
+    .catch(err => {
+      inMemoryStatus[resolvedId].nodes = [{
+        id: 'error',
+        title: 'Execution Error',
+        status: 'failed',
+        tool: 'system',
+        error: err.message
+      }];
     });
-    if (!execRes.ok) throw new Error(`Execution failed: ${execRes.statusText}`);
-    const execData = await execRes.json();
-    // Use execution_id if available, fallback to workflow_id from DAG
-    resolvedId = execData.execution_id || planData.dag.workflow_id;
-    console.log('[API] Execution response:', { execution_id: execData.execution_id, workflow_id: planData.dag.workflow_id, resolvedId });
   }
 
-  // Store in history
   const history = JSON.parse(localStorage.getItem('workflow_history') || '[]');
   history.unshift({ id: resolvedId, name: input.substring(0, 40) + '...', timestamp: Date.now() });
   localStorage.setItem('workflow_history', JSON.stringify(history));
@@ -128,15 +123,17 @@ export async function getWorkflowStatus(id: string): Promise<WorkflowStatus> {
     return getMockWorkflowStatus(id);
   }
 
-  const res = await fetchWithRetry(`${API_BASE}/status?id=${id}`);
-  if (res.status === 404) {
-    // Workflow was in localStorage but server restarted — clear it
-    const history: { id: string }[] = JSON.parse(localStorage.getItem('workflow_history') || '[]');
-    localStorage.setItem('workflow_history', JSON.stringify(history.filter((h) => h.id !== id)));
-    throw new Error(`Workflow "${id}" is no longer in server memory (server was restarted). Please run a new workflow.`);
+  if (inMemoryStatus[id]) {
+    return inMemoryStatus[id];
   }
-  if (!res.ok) throw new Error(`Failed to fetch status: ${res.statusText}`);
-  return res.json();
+  
+  throw new Error(`Workflow "${id}" not found in memory (server might have restarted)`);
+}
+
+export async function getActiveWorkflows(): Promise<WorkflowStatus[]> {
+  return Object.values(inMemoryStatus).filter(wf => 
+    wf.nodes.some(n => n.status === 'running' || n.status === 'pending')
+  );
 }
 
 export async function approveNode(
@@ -167,14 +164,15 @@ export async function approveNode(
  * callers get the real backend message instead of a raw "Internal Server Error".
  */
 export async function connectComposioToolkit(
-  toolkit,
-  userId,
+  toolkit: string,
+  userId: string,
+  extraFields: Record<string, string> = {},
 ) {
   try {
     const res = await fetchWithRetry(`${API_BASE}/integrations/composio/connect`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toolkit, user_id: userId }),
+      body: JSON.stringify({ toolkit, user_id: userId, extra_fields: extraFields }),
     });
     // Always parse the JSON body — even on 4xx/5xx the backend returns a detail field
     const data = await res.json().catch(() => ({}));
@@ -193,6 +191,7 @@ export async function connectComposioToolkit(
     };
   }
 }
+
 
 export async function disconnectComposioToolkit(
   toolkit: string,

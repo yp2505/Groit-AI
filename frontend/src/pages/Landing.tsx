@@ -19,6 +19,22 @@ const Landing = () => {
       fontFamily: "'Inter', system-ui, sans-serif",
       position: "relative", overflow: "hidden"
     }}>
+      <style>
+        {`
+          @keyframes wave-move {
+            0% { transform: translate3d(-90px, 0, 0); }
+            100% { transform: translate3d(85px, 0, 0); }
+          }
+          .landing-waves > use {
+            animation: wave-move 20s linear infinite;
+          }
+          .landing-waves > use:nth-child(1) { animation-delay: -2s; animation-duration: 14s; }
+          .landing-waves > use:nth-child(2) { animation-delay: -3s; animation-duration: 20s; }
+          .landing-waves > use:nth-child(3) { animation-delay: -4s; animation-duration: 26s; }
+          .landing-waves > use:nth-child(4) { animation-delay: -5s; animation-duration: 40s; }
+        `}
+      </style>
+
       {/* Grid Background */}
       <div style={{
         position: "absolute", inset: 0,
@@ -28,6 +44,25 @@ const Landing = () => {
         maskImage: 'radial-gradient(ellipse 80% 80% at 50% 50%, #000 30%, transparent 100%)',
         pointerEvents: "none", zIndex: 0
       }} />
+
+      {/* Animated Waves Background (Horizontal on Bottom) */}
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 1, height: "40vh", pointerEvents: "none" }}>
+        <svg 
+          viewBox="0 24 150 28" 
+          preserveAspectRatio="none" 
+          style={{ width: "100%", height: "100%", opacity: 0.8 }}
+        >
+          <defs>
+            <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+          </defs>
+          <g className="landing-waves">
+            <use href="#gentle-wave" x="48" y="0" fill="rgba(74, 222, 128, 0.05)" />
+            <use href="#gentle-wave" x="48" y="3" fill="rgba(74, 222, 128, 0.03)" />
+            <use href="#gentle-wave" x="48" y="5" fill="rgba(74, 222, 128, 0.01)" />
+            <use href="#gentle-wave" x="48" y="7" fill="rgba(74, 222, 128, 0.08)" />
+          </g>
+        </svg>
+      </div>
 
       {/* Subtle radial glow */}
       <div style={{
@@ -56,18 +91,33 @@ const Landing = () => {
         </div>
 
         {/* Top Right Action */}
-        <button
-          onClick={() => navigate('/login')}
-          style={{
-            padding: "8px 20px", borderRadius: 30, background: theme.accent, color: "#000",
-            fontWeight: 600, fontSize: 14, border: "none", cursor: "pointer",
-            display: "flex", alignItems: "center", gap: 4, transition: "transform 0.2s"
-          }}
-          onMouseEnter={e => e.currentTarget.style.transform = "translateY(-1px)"}
-          onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
-        >
-          Sign In ↗
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <button
+            onClick={() => navigate('/pricing')}
+            style={{
+              padding: "8px 20px", borderRadius: 30, background: "transparent", color: theme.textMain,
+              fontWeight: 600, fontSize: 14, border: "1px solid #2E3640", cursor: "pointer",
+              transition: "all 0.2s"
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = "#1F2933"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.transform = "translateY(0)"; }}
+          >
+            Pricing
+          </button>
+          
+          <button
+            onClick={() => navigate('/login')}
+            style={{
+              padding: "8px 20px", borderRadius: 30, background: theme.accent, color: "#000",
+              fontWeight: 600, fontSize: 14, border: "none", cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 4, transition: "transform 0.2s"
+            }}
+            onMouseEnter={e => e.currentTarget.style.transform = "translateY(-1px)"}
+            onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
+          >
+            Sign In ↗
+          </button>
+        </div>
       </nav>
 
       {/* Main Content */}
@@ -78,9 +128,14 @@ const Landing = () => {
         
         {/* Floating Cards (Background) */}
         <motion.div
-          initial={{ opacity: 0, x: -50, rotate: -15 }}
-          animate={{ opacity: 1, x: 0, rotate: -10 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
+          initial={{ opacity: 0, x: -50, rotate: -15, y: 0 }}
+          animate={{ opacity: 1, x: 0, rotate: -10, y: [0, -25, 0] }}
+          transition={{ 
+            opacity: { duration: 0.8 }, 
+            x: { duration: 0.8 }, 
+            rotate: { duration: 0.8 },
+            y: { duration: 6, repeat: Infinity, ease: "easeInOut", delay: 0 } 
+          }}
           style={{
             position: "absolute", left: "8%", top: "120px",
             background: theme.cardBg, border: `1px solid ${theme.cardBorder}`,
@@ -102,9 +157,14 @@ const Landing = () => {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, x: 50, rotate: 15 }}
-          animate={{ opacity: 1, x: 0, rotate: 10 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
+          initial={{ opacity: 0, x: 50, rotate: 15, y: 0 }}
+          animate={{ opacity: 1, x: 0, rotate: 10, y: [0, -25, 0] }}
+          transition={{ 
+            opacity: { duration: 0.8, delay: 0.1 }, 
+            x: { duration: 0.8, delay: 0.1 }, 
+            rotate: { duration: 0.8, delay: 0.1 },
+            y: { duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 } 
+          }}
           style={{
             position: "absolute", right: "8%", top: "140px",
             background: theme.cardBg, border: `1px solid ${theme.cardBorder}`,
@@ -129,8 +189,11 @@ const Landing = () => {
         <motion.div
           style={{ maxWidth: 840, textAlign: "center", position: "relative", zIndex: 20 }}
           initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          animate={{ opacity: 1, y: [30, 0, -15, 0, -15, 0] }}
+          transition={{ 
+            opacity: { duration: 0.6 },
+            y: { duration: 9, repeat: Infinity, ease: "easeInOut", delay: 1, times: [0, 0.1, 0.55, 1] } 
+          }}
         >
           <h1 style={{ 
             fontSize: 64, fontWeight: 700, lineHeight: 1.1, 
@@ -147,7 +210,7 @@ const Landing = () => {
           </h1>
 
           <p style={{ fontSize: 18, color: theme.textMuted, lineHeight: 1.6, maxWidth: 640, margin: "0 auto 48px" }}>
-            The next-generation AI orchestration engine. Run parallel, multi-agent workflows across Jira, GitHub & Slack with intelligent DAG execution and real-time observability.
+            The next-generation AI orchestration engine. Run parallel, multi-agent workflows across your entire tech stack with intelligent DAG execution and real-time observability.
           </p>
 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16 }}>

@@ -15,20 +15,15 @@ const SUGGESTED_PROMPTS = [
   "Create Jira ticket → append row to Google Sheets → notify Slack #all-daiict",
 ];
 
-const CONNECTED_TOOLS = [
-  { name: "GitHub Integration", path: "/connect-tools" },
-  { name: "Jira Integration", path: "/connect-tools" },
-  { name: "Slack Integration", path: "/connect-tools" },
-  { name: "Google Sheets", path: "/connect-tools" },
-];
+
 
 const COMPOSIO_TOOLS = [
   { tool: 'gmail', label: 'Gmail', description: 'Emails & drafts', domain: 'mail.google.com' },
   { tool: 'googlecalendar', label: 'Calendar', description: 'Meetings & events', domain: 'calendar.google.com', iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Google_Calendar_icon_%282020%29.svg' },
-  { tool: 'googledrive', label: 'Drive', description: 'Docs & files', domain: 'drive.google.com' },
   { tool: 'slack', label: 'Slack', description: 'Team messaging', domain: 'slack.com' },
   { tool: 'github', label: 'GitHub', description: 'Code & branches', domain: 'github.com' },
   { tool: 'jira', label: 'Jira', description: 'Agile & boards', domain: 'atlassian.com' },
+  { tool: 'sheets', label: 'Google Sheets', description: 'Automated reporting', domain: 'google.com', iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/30/Google_Sheets_logo_%282014-2020%29.svg' },
   { tool: 'notion', label: 'Notion', description: 'Notes & docs', domain: 'notion.so', iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png' },
   { tool: 'linear', label: 'Linear', description: 'Issue tracking', domain: 'linear.app' },
   { tool: 'asana', label: 'Asana', description: 'Team projects', domain: 'asana.com' },
@@ -572,6 +567,7 @@ export default function App() {
   const [slackResult, setSlackResult] = useState<{ ok: boolean; text: string } | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
+  const recognitionRef = useRef<any>(null);
   const [isListening, setIsListening] = useState(false);
 
   const [composioStatus, setComposioStatus] = useState<string[]>([]);
@@ -619,6 +615,8 @@ export default function App() {
       alert('Please log in before connecting a toolkit.');
       return;
     }
+
+
     setIsConnecting(toolSlug);
     setFallbackConnectUrl(null);
 
@@ -629,7 +627,21 @@ export default function App() {
     const popup = window.open('', '_blank');
 
     try {
-      const res = await connectComposioToolkit(toolSlug, userId);
+      // Jira requires a subdomain to initiate the Composio OAuth flow
+      const extraFields: Record<string, string> = {};
+      if (toolSlug === 'jira') {
+        const jiraBaseUrl = import.meta.env.VITE_JIRA_BASE_URL || '';
+        const subdomain = jiraBaseUrl
+          .replace('https://', '')
+          .replace('http://', '')
+          .replace('.atlassian.net', '')
+          .replace(/\/$/, '')
+          .trim();
+        if (subdomain) extraFields['subdomain'] = subdomain;
+      }
+
+      const res = await connectComposioToolkit(toolSlug, userId, extraFields);
+
       if (res.ok && res.redirect_url) {
         if (popup && !popup.closed) {
           popup.location.href = res.redirect_url;
@@ -670,7 +682,7 @@ export default function App() {
   };
   // ─── HITL Approval State ──────────────────────────────────────────
   const [pendingApproval, setPendingApproval] = useState<any>(null);
-  const { tools } = useTools();
+
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const navigate = useNavigate();
@@ -869,13 +881,9 @@ export default function App() {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await fetch("/api/active-workflows");
-        if (res.ok) {
-          const data = await res.json();
-          const wfs = (data.workflows || []).sort((a: any, b: any) => b.created_at - a.created_at);
-          setHistory(wfs);
-        }
-      } catch (_err) { /* non-critical: history fetch silently ignored on error */ }
+        const historyData = JSON.parse(localStorage.getItem('workflow_history') || '[]');
+        setHistory(historyData);
+      } catch (_err) { /* non-critical */ }
     };
     fetchHistory();
     const intv = setInterval(fetchHistory, 3000);
@@ -904,30 +912,69 @@ export default function App() {
   }, [id, history]);
 
   const handleMicClick = () => {
-    if (isListening) {
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
       setIsListening(false);
       return;
     }
+    
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("Speech recognition is not supported in this browser.");
+      alert("Speech recognition is not supported in this browser. Please use Chrome or Edge.");
       return;
     }
+    
     const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
     recognition.lang = "en-US";
-    recognition.interimResults = false;
+    recognition.interimResults = true; // Use interim results for smoother UX
+    recognition.continuous = true; // Keep listening until explicitly stopped
     recognition.maxAlternatives = 1;
+    
     recognition.onstart = () => setIsListening(true);
+    
+    let finalTranscript = "";
+    
     recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      setInput(prev => prev + (prev.endsWith(" ") || prev === "" ? "" : " ") + transcript);
+      let interimTranscript = "";
+      let newFinal = "";
+      
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          newFinal += transcript;
+        } else {
+          interimTranscript += transcript;
+        }
+      }
+      
+      if (newFinal) {
+        setInput(prev => {
+          const space = prev.endsWith(" ") || prev === "" ? "" : " ";
+          return prev + space + newFinal;
+        });
+      }
+      // If you want to show interim results, we would need a separate state, 
+      // but for simplicity we just append final results continuously to the input.
     };
-    recognition.onend = () => setIsListening(false);
+    
+    recognition.onend = () => {
+      setIsListening(false);
+      recognitionRef.current = null;
+    };
+    
     recognition.onerror = (event: any) => {
       console.error("Speech recognition error:", event.error);
-      setIsListening(false);
+      if (event.error !== 'no-speech') {
+        setIsListening(false);
+      }
     };
-    recognition.start();
+    
+    try {
+      recognition.start();
+    } catch (e) {
+      console.error("Mic start failed", e);
+    }
   };
 
   const autoResize = () => {
@@ -936,6 +983,10 @@ export default function App() {
     ta.style.height = "auto";
     ta.style.height = Math.min(ta.scrollHeight, 200) + "px";
   };
+
+  useEffect(() => {
+    autoResize();
+  }, [input]);
 
   // ─── Main workflow execution ─────────────────────────────────────
   const handleSend = async (text?: string) => {
@@ -963,6 +1014,12 @@ export default function App() {
     setInput("");
     setChatStarted(true);
     setIsLoading(true);
+    
+    // Reset textarea height
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = "34px";
+    }
 
     abortControllerRef.current = new AbortController();
 
@@ -984,6 +1041,8 @@ export default function App() {
         { role: "user", content }
       ];
 
+      // Credentials are handled by Composio OAuth — no local credentials needed
+
       const res = await fetch("/api/v3/execute", {
         method: "POST",
         headers: {
@@ -992,7 +1051,8 @@ export default function App() {
         },
         body: JSON.stringify({
           user_input: content,
-          chat_history: currentChatHistory
+          chat_history: currentChatHistory,
+          credentials: {}
         }),
         signal: abortControllerRef.current?.signal,
       });
@@ -1008,38 +1068,47 @@ export default function App() {
 
       const data = await res.json();
 
-      if (!data.success) {
+      if (!data.execution && !data.dag) {
         throw new Error(data.error || "Failed to execute workflow");
       }
 
-      const steps = data.intermediate_steps || [];
+      const dagNodes = data.dag?.nodes || [];
+      const execution = data.execution?.results || {};
+
       const dagData = {
-        nodes: steps.map((s: any, i: number) => ({
-          id: `step_${i}`,
-          tool: s.tool,
-          action: "executed",
-          status: "success",
-          output: s.result,
+        nodes: dagNodes.map((n: any) => ({
+          id: n.id,
+          tool: n.tool,
+          action: n.action,
+          status: execution[n.id]?.status || "pending",
+          output: execution[n.id]?.output,
         }))
       };
 
-      const nodeDetails = steps.map((s: any, i: number) => ({
-        node_id: `step_${i}`,
-        tool: s.tool,
-        action: "executed",
-        status: "success",
-        output: s.result,
+      const nodeDetails = dagNodes.map((n: any) => ({
+        node_id: n.id,
+        tool: n.tool,
+        action: n.action,
+        status: execution[n.id]?.status || "pending",
+        output: execution[n.id]?.output,
+        error: execution[n.id]?.error,
       }));
 
-      const auditLogStrings = steps.map((s: any) => `${s.tool} → executed [success]`);
+      const auditLogStrings = dagNodes.map((n: any) => {
+        const st = execution[n.id]?.status || "pending";
+        return `${n.tool} → ${n.action} [${st}]`;
+      });
+
+      const allSuccess = dagNodes.every((n: any) => execution[n.id]?.status === 'success');
+      const outMsg = allSuccess ? "Workflow Completed Successfully." : "Workflow executed with some errors.";
 
       setMessages(prev => prev.map((m: any) => m.id === thinkingId ? {
         id: thinkingId,
         role: "assistant",
         thinking: "",
-        content: data.output || "Workflow Completed Successfully",
-        dagData: steps.length > 0 ? dagData : null,
-        nodeDetails: steps.length > 0 ? nodeDetails : null,
+        content: outMsg,
+        dagData: dagNodes.length > 0 ? dagData : null,
+        nodeDetails: dagNodes.length > 0 ? nodeDetails : null,
         audit: auditLogStrings.length > 0 ? auditLogStrings : undefined,
         isThinking: false,
       } : m));
@@ -1103,7 +1172,7 @@ export default function App() {
     } : m));
 
     try {
-      const execRes = await fetch("/api/execute", {
+      const execRes = await fetch("/api/v3/execute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1178,20 +1247,17 @@ export default function App() {
     setSlackSending(true);
     setSlackResult(null);
     try {
-      const res = await fetch("/api/execute", {
+      const res = await fetch("/api/v3/execute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           dag: {
-            workflow_id: `slack-quick-${Date.now()}`,
             workflow_name: "Slack Quick Message",
-            description: "Direct Slack message from dashboard",
             nodes: [{
               id: "node_1",
-              name: "Send Slack Message",
               tool: "slack",
-              action: "send_message",
-              params: { channel: "#all-daiict", message: text },
+              action: "SEND_MESSAGE",
+              params: { channel: "all-groit", text: text },
               depends_on: [],
               requires_approval: false,
               retry: { max_attempts: 2, backoff_factor: 2, initial_delay: 1, timeout: 15 },
@@ -1290,6 +1356,10 @@ export default function App() {
     setIsLoading(false);
   };
 
+  // System Status: all tool connections come from Composio
+  const mergedApps = connectedApps;
+
+
   // ─── Render ───────────────────────────────────────────────────────
   return (
     <div style={{
@@ -1308,7 +1378,11 @@ export default function App() {
         <div style={{ width: 260, display: "flex", flexDirection: "column", height: "100%" }}>
         {/* Workspace Header & Theme Toggle */}
         <div style={{ padding: "20px 16px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, fontSize: 18, color: T.text }}>
+          <div 
+            onClick={() => navigate("/")}
+            style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, fontSize: 18, color: T.text, cursor: "pointer" }}
+            title="Go to Landing Page"
+          >
             <div style={{ display: "flex", gap: 4 }}>
               <div style={{ width: 10, height: 10, borderRadius: '50%', background: T.accent }} />
               <div style={{ width: 10, height: 10, borderRadius: '50%', background: isDark ? '#2E3640' : '#D1D5DB' }} />
@@ -1385,11 +1459,11 @@ export default function App() {
                 display: "flex", alignItems: "center", gap: 10, padding: "8px 12px",
                 borderRadius: 8, border: "none", cursor: "pointer",
                 background: activeNav === "logs" ? (isDark ? "rgba(255,255,255,0.1)" : "#e5e7eb") : "transparent",
-                color: activeNav === "logs" ? T.text : T.secondary,
+                color: activeNav === "logs" ? (isDark ? "#ffffff" : T.text) : (isDark ? "#a1a1aa" : T.secondary),
                 fontWeight: activeNav === "logs" ? 600 : 500, transition: "all 0.2s", textAlign: "left"
               }}
-              onMouseEnter={e => { if (activeNav !== "logs") e.currentTarget.style.color = T.text; }}
-              onMouseLeave={e => { if (activeNav !== "logs") e.currentTarget.style.color = T.secondary; }}
+              onMouseEnter={e => { if (activeNav !== "logs") e.currentTarget.style.color = isDark ? "#ffffff" : T.text; }}
+              onMouseLeave={e => { if (activeNav !== "logs") e.currentTarget.style.color = isDark ? "#a1a1aa" : T.secondary; }}
             >
               <Terminal size={16} /> System Logs
             </button>
@@ -1399,11 +1473,11 @@ export default function App() {
                 display: "flex", alignItems: "center", gap: 10, padding: "8px 12px",
                 borderRadius: 8, border: "none", cursor: "pointer",
                 background: activeNav === "saved_workflows" ? (isDark ? "rgba(255,255,255,0.1)" : "#e5e7eb") : "transparent",
-                color: activeNav === "saved_workflows" ? T.text : T.secondary,
+                color: activeNav === "saved_workflows" ? (isDark ? "#ffffff" : T.text) : (isDark ? "#a1a1aa" : T.secondary),
                 fontWeight: activeNav === "saved_workflows" ? 600 : 500, transition: "all 0.2s", textAlign: "left"
               }}
-              onMouseEnter={e => { if (activeNav !== "saved_workflows") e.currentTarget.style.color = T.text; }}
-              onMouseLeave={e => { if (activeNav !== "saved_workflows") e.currentTarget.style.color = T.secondary; }}
+              onMouseEnter={e => { if (activeNav !== "saved_workflows") e.currentTarget.style.color = isDark ? "#ffffff" : T.text; }}
+              onMouseLeave={e => { if (activeNav !== "saved_workflows") e.currentTarget.style.color = isDark ? "#a1a1aa" : T.secondary; }}
             >
               <Library size={16} /> Saved Workflows
             </button>
@@ -1437,7 +1511,7 @@ export default function App() {
                         style={{ flex: 1, background: "transparent", border: `1px solid ${T.accent}`, color: T.text, fontSize: 12, outline: "none", padding: "0 4px", borderRadius: 4 }}
                       />
                     ) : (
-                      <span style={{ fontSize: 13, color: currentChatId === chat.id ? T.text : T.secondary, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      <span style={{ fontSize: 13, color: isDark ? "#ffffff" : T.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                         {chat.title}
                       </span>
                     )}
@@ -1639,18 +1713,19 @@ export default function App() {
                     ><X size={14} /> cancel</button>
                   </div>
                 )}
-                <div style={{
-                  display: "flex", alignItems: "flex-end", gap: 10,
-                  background: isDark ? "rgba(18, 22, 28, 0.85)" : "rgba(255, 255, 255, 0.9)",
-                  border: `1px solid ${editingMsg ? "#f0883e" : "rgba(255, 255, 255, 0.08)"}`,
-                  borderRadius: 30, padding: "10px 20px", transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                  boxShadow: isDark ? "0 8px 30px rgba(0,0,0,0.3)" : "0 4px 30px rgba(0,0,0,0.1)",
-                  backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)"
-                }}
-                  onMouseEnter={(e) => { e.currentTarget.style.boxShadow = isDark ? "0 12px 40px rgba(0,0,0,0.4)" : "0 8px 40px rgba(0,0,0,0.12)"; e.currentTarget.style.borderColor = isDark ? "rgba(255, 255, 255, 0.15)" : "rgba(0, 0, 0, 0.15)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.boxShadow = isDark ? "0 8px 30px rgba(0,0,0,0.3)" : "0 4px 30px rgba(0,0,0,0.1)"; e.currentTarget.style.borderColor = editingMsg ? "#f0883e" : "rgba(255, 255, 255, 0.08)"; }}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = isDark ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.2)"; e.currentTarget.style.boxShadow = isDark ? "0 8px 30px rgba(0,0,0,0.3)" : "0 4px 30px rgba(0,0,0,0.1)"; }}
-                  onBlur={(e) => { e.currentTarget.style.borderColor = editingMsg ? "#f0883e" : "rgba(255, 255, 255, 0.08)"; e.currentTarget.style.boxShadow = isDark ? "0 8px 30px rgba(0,0,0,0.3)" : "0 4px 30px rgba(0,0,0,0.1)"; }}>
+                <div
+                  className="laser-border-container"
+                  style={{
+                    display: "flex", alignItems: "flex-end", gap: 10,
+                    "--laser-bg-color": isDark ? "rgba(18, 22, 28, 0.85)" : "rgba(255, 255, 255, 0.9)",
+                    "--laser-color": isDark ? "hsl(142, 71%, 45%)" : T.accent,
+                    padding: "10px 20px", transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                    boxShadow: isDark ? "0 8px 30px rgba(0,0,0,0.3)" : "0 4px 30px rgba(0,0,0,0.1)",
+                  } as React.CSSProperties}
+                  onMouseEnter={(e) => { e.currentTarget.style.boxShadow = isDark ? "0 12px 40px rgba(0,0,0,0.4)" : "0 8px 40px rgba(0,0,0,0.12)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.boxShadow = isDark ? "0 8px 30px rgba(0,0,0,0.3)" : "0 4px 30px rgba(0,0,0,0.1)"; }}
+                  onFocus={(e) => { e.currentTarget.style.boxShadow = isDark ? "0 8px 30px rgba(0,0,0,0.3)" : "0 4px 30px rgba(0,0,0,0.1)"; }}
+                  onBlur={(e) => { e.currentTarget.style.boxShadow = isDark ? "0 8px 30px rgba(0,0,0,0.3)" : "0 4px 30px rgba(0,0,0,0.1)"; }}>
                   <button
                     onClick={() => setShowToolkitModal(true)}
                     title="Toolkits & Integrations"
@@ -1678,6 +1753,10 @@ export default function App() {
                       }
                     }}
                     placeholder="Describe your workflow..."
+                    data-gramm="false"
+                    data-gramm_editor="false"
+                    data-enable-grammarly="false"
+                    spellCheck={false}
                     style={{
                       flex: 1, background: "transparent", border: "none", outline: "none",
                       color: T.text, fontSize: 14, lineHeight: "22.4px", resize: "none",
@@ -1780,13 +1859,13 @@ export default function App() {
               <span style={{ fontSize: 10, opacity: 0.7 }}>Ready to process workflows</span>
             </p>
 
-            {connectedApps.some((app: any) => app.connected) && (
+            {mergedApps.some((app: any) => app.connected) && (
               <div style={{ marginTop: "30px" }}>
                 <div style={{ fontSize: 11, color: T.secondary, textTransform: "uppercase", letterSpacing: 0.8, fontWeight: 700, marginBottom: 12 }}>
                   Connected Apps
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {connectedApps.filter((app: any) => app.connected).map((app: any) => (
+                  {mergedApps.filter((app: any) => app.connected).map((app: any) => (
                     <div 
                       key={app.slug} 
                       className="group"
@@ -1798,8 +1877,8 @@ export default function App() {
                     >
                       <div style={{
                         width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
-                        background: "#2ea043",
-                        boxShadow: "0 0 5px rgba(46,160,67,0.5)"
+                        background: isDark ? "#2ea043" : T.accent,
+                        boxShadow: isDark ? "0 0 5px rgba(46,160,67,0.5)" : `0 0 5px ${T.accent}80`
                       }} />
                       <span style={{ fontWeight: 600 }}>{app.name}</span>
                       {!app.connected ? (

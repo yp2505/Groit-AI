@@ -8,43 +8,19 @@ import { connectComposioToolkit, API_BASE, fetchWithRetry } from '@/lib/api';
 import { Target, FileText, ClipboardList, Gamepad2, TrendingUp, Github, MessageSquare, BarChart, AlertTriangle, ExternalLink, X, Loader2, CheckCircle2, Link as LinkIcon } from "lucide-react";
 
 
-const COMPOSIO_TOOLS = [
-  { tool: 'linear', label: 'Linear', description: 'Issue tracking & agile project management', icon: <Target size={24} /> },
-  { tool: 'notion', label: 'Notion', description: 'All-in-one workspace for notes & docs', icon: <FileText size={24} /> },
-  { tool: 'asana', label: 'Asana', description: 'Manage team projects and tasks', icon: <ClipboardList size={24} /> },
-  { tool: 'discord', label: 'Discord', description: 'Community chat and notifications', icon: <Gamepad2 size={24} /> },
-  { tool: 'hubspot', label: 'HubSpot', description: 'CRM and marketing automation', icon: <TrendingUp size={24} /> },
-];
+
 
 const TOOLS = [
-  {
-    tool: 'github',
-    label: 'GitHub',
-    description: 'Code repository & branch management',
-    icon: <Github size={24} />,
-    fields: [
-      { key: 'username', label: 'GitHub Username', placeholder: 'your-username (optional — uses .env)', type: 'text' },
-      { key: 'password', label: 'Personal Access Token', placeholder: 'ghp_xxxxxxxxxxxx (optional — uses .env)', type: 'password' },
-    ],
-  },
   {
     tool: 'jira',
     label: 'Jira',
     description: 'Issue tracking & project management',
     icon: <ClipboardList size={24} />,
     fields: [
-      { key: 'domain', label: 'Jira Workspace URL', placeholder: 'team.atlassian.net', type: 'text', value: '' },
-      { key: 'email', label: 'Atlassian Email', placeholder: 'you@yourteam.com', type: 'email', value: '' },
-      { key: 'password', label: 'API Token', placeholder: 'ATATT3x...', type: 'password', value: '' },
-    ],
-  },
-  {
-    tool: 'slack',
-    label: 'Slack',
-    description: 'Team communication & notifications',
-    icon: <MessageSquare size={24} />,
-    fields: [
-      { key: 'token', label: 'Bot Token', placeholder: 'xoxb-...', type: 'password', value: '' },
+      { key: 'JIRA_EMAIL', label: 'Jira Email', placeholder: 'thehackhub07@gmail.com', type: 'email', value: '' },
+      { key: 'JIRA_API_TOKEN', label: 'Jira API Token', placeholder: 'ATATT3x...', type: 'password', value: '' },
+      { key: 'JIRA_BASE_URL', label: 'Jira Base URL', placeholder: 'https://thehackhub07.atlassian.net', type: 'text', value: '' },
+      { key: 'JIRA_PROJECT_KEY', label: 'Jira Project Key', placeholder: 'NAWSKITJ', type: 'text', value: '' },
     ],
   },
   {
@@ -53,7 +29,8 @@ const TOOLS = [
     description: 'Automated reporting & logging',
     icon: <BarChart size={24} />,
     fields: [
-      { key: 'sheet_id', label: 'Spreadsheet ID', placeholder: '1NZ0DljGTjF2RsEU...', type: 'text', value: '' },
+      { key: 'GOOGLE_SHEETS_ID', label: 'Google Sheets ID', placeholder: '1_G6VETUE4cZDE9...', type: 'text', value: '' },
+      { key: 'GOOGLE_SHEETS_CREDENTIALS_JSON', label: 'Credentials JSON', placeholder: '{"type": "service_account", ...}', type: 'password', value: '' },
     ],
   },
 ];
@@ -111,9 +88,9 @@ const ConnectTools = () => {
     }
   };
 
-  const connectedCount = Object.values(tools).filter(t => t.status === 'connected').length + composioStatus.length;
-  const total = TOOLS.length + COMPOSIO_TOOLS.length;
-  const progressPct = Math.round((connectedCount / total) * 100);
+  const connectedCount = Object.values(tools).filter(t => t.status === 'connected').length;
+  const total = TOOLS.length;
+  const progressPct = total === 0 ? 0 : Math.round((connectedCount / total) * 100);
   const isLoading = Object.values(tools).some(t => t.status === 'connecting');
 
   return (
@@ -273,75 +250,7 @@ const ConnectTools = () => {
               ))}
             </div>
 
-            {/* Composio Toolkits Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              style={{ marginTop: 40 }}
-            >
-              <h2 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 8px", color: "#e6edf3" }}>Extra Integrations</h2>
-              <p style={{ color: "#7d8590", fontSize: 13, margin: "0 0 20px" }}>
-                Connect these popular apps securely via Composio's OAuth flow.
-              </p>
-              
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                {COMPOSIO_TOOLS.map((t, i) => {
-                  const isConnected = composioStatus.includes(t.tool);
-                  const connecting = isConnecting === t.tool;
-                  return (
-                    <motion.div
-                      key={t.tool}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3 + i * 0.06 }}
-                      style={{
-                        background: "#0d1117", border: `1px solid ${isConnected ? "#2ea04350" : "#30363d"}`,
-                        borderRadius: 12, padding: 16, display: "flex", flexDirection: "column",
-                        gap: 12, position: "relative", overflow: "hidden"
-                      }}
-                    >
-                      {isConnected && (
-                        <div style={{ position: "absolute", top: -20, right: -20, width: 40, height: 40, background: "#2ea04320", borderRadius: "50%", filter: "blur(10px)" }} />
-                      )}
-                      
-                      <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                        <div style={{ fontSize: 24 }}>{t.icon}</div>
-                        <div>
-                          <div style={{ fontSize: 14, fontWeight: 600, color: "#e6edf3", marginBottom: 2 }}>{t.label}</div>
-                          <div style={{ fontSize: 11, color: "#7d8590", lineHeight: 1.4 }}>{t.description}</div>
-                        </div>
-                      </div>
-                      
-                      <button
-                        onClick={() => handleConnectComposio(t.tool)}
-                        disabled={connecting || isConnected}
-                        style={{
-                          marginTop: "auto", padding: "8px", borderRadius: 8, border: "none",
-                          fontSize: 12, fontWeight: 600, cursor: isConnected ? "default" : (connecting ? "wait" : "pointer"),
-                          background: isConnected ? "#0d3320" : "#161b22",
-                          color: isConnected ? "#4ade80" : "#c9d1d9",
-                          borderTop: `1px solid ${isConnected ? "#2ea04340" : "#30363d"}`,
-                          transition: "all 0.2s"
-                        }}
-                        onMouseEnter={e => {
-                          if (!isConnected && !connecting) {
-                            e.currentTarget.style.background = "#21262d";
-                          }
-                        }}
-                        onMouseLeave={e => {
-                          if (!isConnected && !connecting) {
-                            e.currentTarget.style.background = "#161b22";
-                          }
-                        }}
-                      >
-                        {connecting ? <span className="flex items-center gap-2"><Loader2 size={16} className="animate-spin" /> Connecting...</span> : isConnected ? <span className="flex items-center gap-2"><CheckCircle2 size={16} /> Connected</span> : <span className="flex items-center gap-2"><LinkIcon size={16} /> Connect</span>}
-                      </button>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </motion.div>
+
           </div>
         </div>
 
