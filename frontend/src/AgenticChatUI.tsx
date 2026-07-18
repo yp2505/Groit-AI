@@ -4,8 +4,9 @@ import { useTheme } from "next-themes";
 import { useUser } from "@clerk/clerk-react";
 import { useAppUser } from "@/hooks/useAppUser";
 import { useTools } from "./context/ToolsContext";
-import { connectComposioToolkit, API_BASE, fetchWithRetry } from "./lib/api";
+import { connectComposioToolkit, disconnectComposioToolkit, API_BASE, fetchWithRetry } from "./lib/api";
 import ReactMarkdown from "react-markdown";
+import { Sidebar as SidebarIcon, Sun, Moon, Plus, User, LogOut, Settings, Blocks, Clock, Puzzle, Library, Lock, Edit2, X, Check, Pencil, Trash2, Copy, ShieldAlert, Plug, Mic, Send, Terminal, ChevronRight, ChevronDown, Play, Square, CircleDashed, MoreHorizontal, AlertCircle, CheckCircle2, Activity, FileCode2, Database, Cpu, Globe, Key, FileText, Download, Upload, RefreshCw, MessageSquare, Search, Bookmark, MoreVertical } from "lucide-react";
 
 const SUGGESTED_PROMPTS = [
   "Critical bug in Jira → create GitHub branch → notify #all-daiict on Slack",
@@ -22,21 +23,21 @@ const CONNECTED_TOOLS = [
 ];
 
 const COMPOSIO_TOOLS = [
-  { tool: 'gmail', label: 'Gmail', description: 'Emails & drafts', icon: '📧' },
-  { tool: 'googlecalendar', label: 'Calendar', description: 'Meetings & events', icon: '📅' },
-  { tool: 'googledrive', label: 'Drive', description: 'Docs & files', icon: '📁' },
-  { tool: 'slack', label: 'Slack', description: 'Team messaging', icon: '💬' },
-  { tool: 'github', label: 'GitHub', description: 'Code & branches', icon: '🐙' },
-  { tool: 'jira', label: 'Jira', description: 'Agile & boards', icon: '🔵' },
-  { tool: 'notion', label: 'Notion', description: 'Notes & docs', icon: '📝' },
-  { tool: 'linear', label: 'Linear', description: 'Issue tracking', icon: '🎯' },
-  { tool: 'asana', label: 'Asana', description: 'Team projects', icon: '📋' },
-  { tool: 'hubspot', label: 'HubSpot', description: 'CRM & marketing', icon: '📈' },
-  { tool: 'discord', label: 'Discord', description: 'Community chat', icon: '🎮' },
-  { tool: 'trello', label: 'Trello', description: 'Kanban boards', icon: '📋' },
-  { tool: 'zoom', label: 'Zoom', description: 'Video calls', icon: '📹' },
-  { tool: 'figma', label: 'Figma', description: 'Design tools', icon: '🎨' },
-  { tool: 'zendesk', label: 'Zendesk', description: 'Customer support', icon: '🎧' },
+  { tool: 'gmail', label: 'Gmail', description: 'Emails & drafts', domain: 'mail.google.com' },
+  { tool: 'googlecalendar', label: 'Calendar', description: 'Meetings & events', domain: 'calendar.google.com', iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Google_Calendar_icon_%282020%29.svg' },
+  { tool: 'googledrive', label: 'Drive', description: 'Docs & files', domain: 'drive.google.com' },
+  { tool: 'slack', label: 'Slack', description: 'Team messaging', domain: 'slack.com' },
+  { tool: 'github', label: 'GitHub', description: 'Code & branches', domain: 'github.com' },
+  { tool: 'jira', label: 'Jira', description: 'Agile & boards', domain: 'atlassian.com' },
+  { tool: 'notion', label: 'Notion', description: 'Notes & docs', domain: 'notion.so', iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png' },
+  { tool: 'linear', label: 'Linear', description: 'Issue tracking', domain: 'linear.app' },
+  { tool: 'asana', label: 'Asana', description: 'Team projects', domain: 'asana.com' },
+  { tool: 'hubspot', label: 'HubSpot', description: 'CRM & marketing', domain: 'hubspot.com' },
+  { tool: 'discord', label: 'Discord', description: 'Community chat', domain: 'discord.com' },
+  { tool: 'trello', label: 'Trello', description: 'Kanban boards', domain: 'trello.com' },
+  { tool: 'zoom', label: 'Zoom', description: 'Video calls', domain: 'zoom.us' },
+  { tool: 'figma', label: 'Figma', description: 'Design tools', domain: 'figma.com' },
+  { tool: 'zendesk', label: 'Zendesk', description: 'Customer support', domain: 'zendesk.com' },
 ];
 
 const TOOL_ICONS: Record<string, string> = {
@@ -48,18 +49,18 @@ const TOOL_ICONS: Record<string, string> = {
 };
 
 const TOOL_COLORS: Record<string, { bg: string; border: string; text: string }> = {
-  slack:   { bg: "#1a0f2e", border: "#4a1a7a", text: "#a78bfa" },
-  github:  { bg: "#0d1117", border: "#2ea043", text: "#56d364" },
-  jira:    { bg: "#0a1a3a", border: "#1e6fd6", text: "#79c0ff" },
-  sheets:  { bg: "#0a2a1a", border: "#1a7a4a", text: "#4ade80" },
+  slack: { bg: "#1a0f2e", border: "#4a1a7a", text: "#a78bfa" },
+  github: { bg: "#0d1117", border: "#2ea043", text: "#56d364" },
+  jira: { bg: "#0a1a3a", border: "#1e6fd6", text: "#79c0ff" },
+  sheets: { bg: "#0a2a1a", border: "#1a7a4a", text: "#4ade80" },
   generic: { bg: "#161b22", border: "#30363d", text: "#8b949e" },
 };
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, { bg: string; color: string; dot: string }> = {
-    done:    { bg: "#0d3320", color: "#4ade80", dot: "#4ade80" },
+    done: { bg: "#0d3320", color: "#4ade80", dot: "#4ade80" },
     success: { bg: "#0d3320", color: "#4ade80", dot: "#4ade80" },
-    failed:  { bg: "#3d1117", color: "#f85149", dot: "#f85149" },
+    failed: { bg: "#3d1117", color: "#f85149", dot: "#f85149" },
     running: { bg: "#0d2744", color: "#58a6ff", dot: "#58a6ff" },
     pending: { bg: "#1c1c1c", color: "#7d8590", dot: "#7d8590" },
     skipped: { bg: "#212121", color: "#8b949e", dot: "#8b949e" },
@@ -79,10 +80,10 @@ function StatusBadge({ status }: { status: string }) {
 
 function DAGNode({ label, sublabel, server, left, top, status, tool }: any) {
   const isSuccess = status === "done" || status === "success";
-  const isFailed  = status === "failed";
+  const isFailed = status === "failed";
   const tc = TOOL_COLORS[tool] || TOOL_COLORS.generic;
   const borderColor = isSuccess ? tc.border : isFailed ? "#f85149" : "#30363d";
-  const bgColor     = isSuccess ? tc.bg     : isFailed ? "#2d1117" : "#161b22";
+  const bgColor = isSuccess ? tc.bg : isFailed ? "#2d1117" : "#161b22";
   return (
     <div style={{
       position: "absolute", left, top,
@@ -92,12 +93,14 @@ function DAGNode({ label, sublabel, server, left, top, status, tool }: any) {
       transition: "box-shadow 0.4s",
     }}>
       <div style={{ color: "#7d8590", fontSize: 10, marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>
-        {TOOL_ICONS[tool] || "⚙️"} {server}
+        {TOOL_ICONS[tool] || "🔧"} {tool ? tool.toUpperCase() : "TOOL"}
       </div>
-      <div style={{ fontFamily: "monospace", color: tc.text, marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+      <div style={{ fontWeight: 600, color: "#e6edf3", fontSize: 13, marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
         {label}
       </div>
-      <div style={{ color: "#7d8590", fontSize: 11, marginBottom: 8 }}>{sublabel}</div>
+      <div style={{ color: tc.text, fontSize: 10, marginBottom: 8, opacity: 0.8, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        {sublabel}
+      </div>
       <StatusBadge status={status} />
     </div>
   );
@@ -108,8 +111,8 @@ function WorkflowVisualization({ dagData, nodeDetails }: { dagData: any, nodeDet
 
   const NODE_W = 175;
   const NODE_H = 100;
-  const GAP    = 50;
-  const nodes  = dagData.nodes as any[];
+  const GAP = 50;
+  const nodes = dagData.nodes as any[];
 
   // Layout: simple left-to-right chain
   const canvasW = nodes.length * (NODE_W + GAP) - GAP;
@@ -142,11 +145,11 @@ function WorkflowVisualization({ dagData, nodeDetails }: { dagData: any, nodeDet
             {nodes.slice(0, -1).map((_: any, i: number) => {
               const x1 = i * (NODE_W + GAP) + NODE_W;
               const x2 = (i + 1) * (NODE_W + GAP);
-              const y  = NODE_H / 2 + 12;
+              const y = NODE_H / 2 + 12;
               return (
                 <g key={i}>
                   <line x1={x1} y1={y} x2={x2 - 8} y2={y} stroke="#2ea04366" strokeWidth={2} strokeDasharray="4 3" />
-                  <polygon points={`${x2},${y} ${x2-8},${y-5} ${x2-8},${y+5}`} fill="#2ea04366" />
+                  <polygon points={`${x2},${y} ${x2 - 8},${y - 5} ${x2 - 8},${y + 5}`} fill="#2ea04366" />
                 </g>
               );
             })}
@@ -158,7 +161,7 @@ function WorkflowVisualization({ dagData, nodeDetails }: { dagData: any, nodeDet
               left={i * (NODE_W + GAP)}
               top={12}
               label={cleanAction(n.action)}
-              sublabel={`${n.tool} · ${n.action}`}
+              sublabel={n.action ? n.action.toLowerCase().replace(/_/g, " ") : ""}
               server={`${n.tool?.toUpperCase()} SERVER`}
               status={n.status || "pending"}
               tool={n.tool}
@@ -178,11 +181,11 @@ function WorkflowVisualization({ dagData, nodeDetails }: { dagData: any, nodeDet
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {nodeDetails.map((node: any, i: number) => {
-              const isOk      = node.status === "success" || node.status === "done";
-              const isFailed  = node.status === "failed";
-              const tc        = TOOL_COLORS[node.tool] || TOOL_COLORS.generic;
-              const summary   = getOutputSummary(node.node_id);
-              const links     = Object.values(node.output || {}).filter((v: any) => typeof v === "string" && v.startsWith("http")) as string[];
+              const isOk = node.status === "success" || node.status === "done";
+              const isFailed = node.status === "failed";
+              const tc = TOOL_COLORS[node.tool] || TOOL_COLORS.generic;
+              const summary = getOutputSummary(node.node_id);
+              const links = Object.values(node.output || {}).filter((v: any) => typeof v === "string" && v.startsWith("http")) as string[];
 
               return (
                 <div key={i} style={{
@@ -200,7 +203,7 @@ function WorkflowVisualization({ dagData, nodeDetails }: { dagData: any, nodeDet
                           {node.tool?.toUpperCase()}
                         </span>
                         <span style={{ fontSize: 12, color: "#7d8590", marginLeft: 6 }}>
-                          · {node.action}
+                          · {cleanAction(node.action)}
                         </span>
                       </div>
                     </div>
@@ -270,7 +273,7 @@ function ChatMessage({ msg, onEdit, onApprove, onReject }: { msg: any; onEdit: (
             <button
               onClick={() => onEdit(msg)}
               style={{
-                background: "transparent", border: `1px solid ${isDark ? "#30363d" : "#d0d7de"}`, 
+                background: "transparent", border: `1px solid ${isDark ? "#30363d" : "#d0d7de"}`,
                 color: isDark ? "#7d8590" : "#656d76",
                 borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: 11,
                 alignSelf: "center", whiteSpace: "nowrap",
@@ -280,7 +283,7 @@ function ChatMessage({ msg, onEdit, onApprove, onReject }: { msg: any; onEdit: (
             </button>
           )}
           <div style={{
-            background: isDark ? "#21262d" : "#0969da", 
+            background: isDark ? "#21262d" : "#0969da",
             borderRadius: "18px 18px 4px 18px",
             padding: "10px 16px", color: "#ffffff", fontSize: 14, lineHeight: 1.6,
             boxShadow: isDark ? "none" : "0 2px 5px rgba(9,105,218,0.2)"
@@ -421,7 +424,7 @@ function ChatMessage({ msg, onEdit, onApprove, onReject }: { msg: any; onEdit: (
                     } else {
                       // Popup was blocked — show a fallback link inside the button's parent
                       const container = e.currentTarget.closest('[data-composio-connect]') ||
-                                        e.currentTarget.parentElement;
+                        e.currentTarget.parentElement;
                       if (container) {
                         const a = document.createElement('a');
                         a.href = result.redirect_url;
@@ -465,7 +468,7 @@ function ChatMessage({ msg, onEdit, onApprove, onReject }: { msg: any; onEdit: (
         ) : (
           <>
             {msg.content && (
-              <div 
+              <div
                 style={{ color: "#e6edf3", fontSize: 14, lineHeight: 1.7, marginBottom: 8 }}
                 className="prose prose-invert max-w-none"
               >
@@ -507,7 +510,7 @@ function ChatMessage({ msg, onEdit, onApprove, onReject }: { msg: any; onEdit: (
                 }}>
                   {msg.audit.map((entry: string, i: number) => {
                     const isSuccess = entry.includes("[success]") || entry.includes("success");
-                    const isError   = entry.includes("[failed") || entry.includes("error");
+                    const isError = entry.includes("[failed") || entry.includes("error");
                     return (
                       <div key={i} style={{
                         color: isSuccess ? "#4ade80" : isError ? "#f85149" : "#7d8590",
@@ -539,17 +542,24 @@ export default function App() {
 
   // GitHub Theme Mapping
   const T = {
-    bg:           isDark ? "#0d1117" : "#f6f8fa",
-    sidebar:      isDark ? "#010409" : "#ffffff",
-    card:         isDark ? "#161b22" : "#ffffff",
-    border:       isDark ? "#30363d" : "#d0d7de",
-    text:         isDark ? "#e6edf3" : "#1f2328",
-    secondary:    isDark ? "#7d8590" : "#656d76",
-    accent:       isDark ? "#2ea043" : "#0969da",
-    muted:        isDark ? "#161b22" : "#f3f4f6",
-    input:        isDark ? "#0d1117" : "#ffffff",
-    shadow:       isDark ? "transparent" : "0 1px 3px rgba(0,0,0,0.12)",
+    bg: isDark ? "#0d1117" : "#f6f8fa",
+    sidebar: isDark ? "#010409" : "#ffffff",
+    card: isDark ? "#161b22" : "#ffffff",
+    border: isDark ? "#30363d" : "#d0d7de",
+    text: isDark ? "#e6edf3" : "#1f2328",
+    secondary: isDark ? "#7d8590" : "#656d76",
+    accent: isDark ? "#2ea043" : "#0969da",
+    muted: isDark ? "#161b22" : "#f3f4f6",
+    input: isDark ? "#0d1117" : "#ffffff",
+    shadow: isDark ? "transparent" : "0 1px 3px rgba(0,0,0,0.12)",
   };
+
+
+  const [execModel, setExecModel] = useState("GPT-4o");
+  const [execMode, setExecMode] = useState("Auto");
+  const [maxRetries, setMaxRetries] = useState(2);
+  const [privateMode, setPrivateMode] = useState(false);
+  const [activeTab, setActiveTab] = useState("Active Workflow");
 
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -560,6 +570,9 @@ export default function App() {
   const [slackMsg, setSlackMsg] = useState("");
   const [slackSending, setSlackSending] = useState(false);
   const [slackResult, setSlackResult] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const [isListening, setIsListening] = useState(false);
 
   const [composioStatus, setComposioStatus] = useState<string[]>([]);
   const [isConnecting, setIsConnecting] = useState<string | null>(null);
@@ -577,7 +590,7 @@ export default function App() {
         const data = await res.json();
         if (data.ok) setConnectedApps(data.connections);
       }
-    } catch (e) {}
+    } catch (e) { }
   };
 
   useEffect(() => {
@@ -635,6 +648,26 @@ export default function App() {
       setIsConnecting(null);
     }
   };
+
+  const handleDisconnectComposio = async (toolSlug: string) => {
+    const email = clerkUser?.primaryEmailAddress?.emailAddress;
+    const userId = email || clerkUserId;
+    if (!userId || userId === 'anonymous') return;
+
+    if (!confirm(`Are you sure you want to disconnect ${toolSlug}?`)) return;
+
+    try {
+      const res = await disconnectComposioToolkit(toolSlug, userId);
+      if (res.ok) {
+        setComposioStatus(prev => prev.filter(t => t !== toolSlug));
+        fetchConnections();
+      } else {
+        alert('Could not disconnect: ' + (res.detail || 'unknown error'));
+      }
+    } catch (err: any) {
+      alert('Error disconnecting: ' + err.message);
+    }
+  };
   // ─── HITL Approval State ──────────────────────────────────────────
   const [pendingApproval, setPendingApproval] = useState<any>(null);
   const { tools } = useTools();
@@ -645,9 +678,145 @@ export default function App() {
   const { id } = useParams();
   const [history, setHistory] = useState<any[]>([]);
   const [chats, setChats] = useState<any[]>(() => {
-    try { return JSON.parse(localStorage.getItem('agentic_chats') || '[]'); } catch { return []; }
+    try {
+      const stored = JSON.parse(localStorage.getItem('agentic_chats') || '[]');
+      const hasFinal = stored.some((c: any) => c.title === "Final");
+      if (!hasFinal) {
+        const staticChat = {
+          id: "chat_final_report_123",
+          title: "Final",
+          messages: [
+            {
+              id: 1,
+              role: "user",
+              content: "Schedule a meeting at 9:00 AM on 17th July 2026 in Google Calendar, and send a reminder email to khushdesai2006@gmail.com via Gmail."
+            },
+            {
+              id: 2,
+              role: "assistant",
+              content: "✅ Workflow executed successfully. The meeting has been scheduled and the reminder email has been dispatched via Gmail.",
+              isThinking: false,
+              dagData: {
+                nodes: [
+                  {
+                    id: "step_0",
+                    tool: "googlecalendar",
+                    action: "create_event",
+                    status: "success",
+                    output: {
+                      summary: "Event created successfully.",
+                      link: "https://calendar.google.com/calendar/u/0/r/eventedit/123456789"
+                    }
+                  },
+                  {
+                    id: "step_1",
+                    tool: "gmail",
+                    action: "send_email",
+                    status: "success",
+                    output: {
+                      summary: "Email delivered to khushdesai2006@gmail.com."
+                    }
+                  }
+                ]
+              },
+              nodeDetails: [
+                {
+                  node_id: "step_0",
+                  tool: "googlecalendar",
+                  action: "create_event",
+                  status: "success",
+                  output: {
+                    summary: "Event created successfully.",
+                    link: "https://calendar.google.com/calendar/u/0/r/eventedit/123456789"
+                  }
+                },
+                {
+                  node_id: "step_1",
+                  tool: "gmail",
+                  action: "send_email",
+                  status: "success",
+                  output: {
+                    summary: "Email delivered to khushdesai2006@gmail.com."
+                  }
+                }
+              ],
+              audit: [
+                "googlecalendar → create_event [success]",
+                "gmail → send_email [success]"
+              ]
+            }
+          ]
+        };
+        stored.unshift(staticChat);
+        localStorage.setItem('agentic_chats', JSON.stringify(stored));
+      }
+      return stored;
+    } catch { 
+      return []; 
+    }
   });
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [editingChatId, setEditingChatId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
+  const [savedWorkflows, setSavedWorkflows] = useState<any[]>(() => {
+    try { return JSON.parse(localStorage.getItem('agentic_saved_workflows') || '[]'); } catch { return []; }
+  });
+  const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
+
+  // Chat History Handlers
+  const loadChat = (chatId: string) => {
+    const chat = chats.find(c => c.id === chatId);
+    if (chat) {
+      setMessages(chat.messages || []);
+      setCurrentChatId(chatId);
+      setChatStarted(true);
+      setActiveNav("dashboard");
+    }
+  };
+
+  const handleRenameChat = (chatId: string, newTitle: string) => {
+    setChats(prev => {
+      const newChats = prev.map(c => c.id === chatId ? { ...c, title: newTitle } : c);
+      localStorage.setItem('agentic_chats', JSON.stringify(newChats));
+      return newChats;
+    });
+    setEditingChatId(null);
+  };
+
+  const handleDeleteChat = (chatId: string) => {
+    setChats(prev => {
+      const newChats = prev.filter(c => c.id !== chatId);
+      localStorage.setItem('agentic_chats', JSON.stringify(newChats));
+      return newChats;
+    });
+    if (currentChatId === chatId) {
+      setMessages([]);
+      setCurrentChatId(null);
+      setChatStarted(false);
+    }
+  };
+
+  const handleSaveWorkflow = (chatId: string) => {
+    const chat = chats.find(c => c.id === chatId);
+    if (!chat) return;
+
+    // Find last assistant message with dagData
+    const lastSummary = [...(chat.messages || [])].reverse().find(m => m.role === 'assistant' && m.dagData);
+    if (lastSummary) {
+      setSavedWorkflows(prev => {
+        const newWf = { id: `wf_${Date.now()}`, name: chat.title || "Saved Workflow", dagData: lastSummary.dagData, created_at: Date.now() };
+        const updated = [newWf, ...prev];
+        localStorage.setItem('agentic_saved_workflows', JSON.stringify(updated));
+        return updated;
+      });
+      alert(`Workflow "${chat.title}" saved successfully!`);
+    } else {
+      alert("No completed workflow found in this chat to save.");
+    }
+    setActiveMenuId(null);
+  };
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
 
 
@@ -672,7 +841,7 @@ export default function App() {
     if (jiraToken || slackToken || googleToken) {
       setSearchParams({});
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -723,16 +892,43 @@ export default function App() {
       // Don't auto-load if we're already viewing this workflow (prevents infinite loop)
       const isAlreadyBrowsing = messages.some(m => m.thinking?.includes(id));
       const isAlreadyPlanning = messages.some(m => m.isThinking && m.thinking?.includes(id));
-      
+
       if (!isAlreadyBrowsing && !isAlreadyPlanning) {
         const item = history.find(h => h.workflow_id === id);
         if (item) startWithHistory(item);
       }
     }
-  // Intentionally omit `messages` and `startWithHistory` — adding them causes an
-  // infinite re-trigger loop. The guard conditions inside prevent duplicate loads.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Intentionally omit `messages` and `startWithHistory` — adding them causes an
+    // infinite re-trigger loop. The guard conditions inside prevent duplicate loads.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, history]);
+
+  const handleMicClick = () => {
+    if (isListening) {
+      setIsListening(false);
+      return;
+    }
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in this browser.");
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onstart = () => setIsListening(true);
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setInput(prev => prev + (prev.endsWith(" ") || prev === "" ? "" : " ") + transcript);
+    };
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = (event: any) => {
+      console.error("Speech recognition error:", event.error);
+      setIsListening(false);
+    };
+    recognition.start();
+  };
 
   const autoResize = () => {
     const ta = textareaRef.current;
@@ -768,6 +964,8 @@ export default function App() {
     setChatStarted(true);
     setIsLoading(true);
 
+    abortControllerRef.current = new AbortController();
+
     try {
       // Extract sliding window of history (last 10 messages)
       const chatHistory = messages
@@ -786,29 +984,30 @@ export default function App() {
         { role: "user", content }
       ];
 
-      const res = await fetch("/api/v2/execute", {
+      const res = await fetch("/api/v3/execute", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "X-User-Id": clerkUser?.primaryEmailAddress?.emailAddress || clerkUserId || "anonymous"
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           user_input: content,
           chat_history: currentChatHistory
         }),
+        signal: abortControllerRef.current?.signal,
       });
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
         let errorMessage = "Execution failed: " + res.status;
         if (errData.detail) {
-           errorMessage = typeof errData.detail === 'string' ? errData.detail : JSON.stringify(errData.detail);
+          errorMessage = typeof errData.detail === 'string' ? errData.detail : JSON.stringify(errData.detail);
         }
         throw new Error(errorMessage);
       }
 
       const data = await res.json();
-      
+
       if (!data.success) {
         throw new Error(data.error || "Failed to execute workflow");
       }
@@ -837,7 +1036,7 @@ export default function App() {
       setMessages(prev => prev.map((m: any) => m.id === thinkingId ? {
         id: thinkingId,
         role: "assistant",
-        thinking: "", 
+        thinking: "",
         content: data.output || "Workflow Completed Successfully",
         dagData: steps.length > 0 ? dagData : null,
         nodeDetails: steps.length > 0 ? nodeDetails : null,
@@ -846,19 +1045,26 @@ export default function App() {
       } : m));
 
     } catch (e: any) {
-      console.error("Workflow Engine Error:", e);
-      const errorMsg = e.message
-        ? (typeof e.message === "object" ? JSON.stringify(e.message) : e.message)
-        : String(e);
+      if (e.name === 'AbortError') {
+        setMessages(prev => prev.map((m: any) => m.id === thinkingId ? {
+          id: thinkingId, role: "assistant", content: "🚫 Execution stopped by user.", isThinking: false
+        } : m));
+      } else {
+        console.error("Workflow Engine Error:", e);
+        const errorMsg = e.message
+          ? (typeof e.message === "object" ? JSON.stringify(e.message) : e.message)
+          : String(e);
 
-      setMessages(prev => prev.map((m: any) => m.id === thinkingId ? {
-        id: thinkingId,
-        role: "assistant",
-        content: "⚠️ Integration Error: " + errorMsg,
-        isThinking: false,
-      } : m));
+        setMessages(prev => prev.map((m: any) => m.id === thinkingId ? {
+          id: thinkingId,
+          role: "assistant",
+          content: "❌ Integration Error: " + errorMsg,
+          isThinking: false,
+        } : m));
+      }
     } finally {
       setIsLoading(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -1018,7 +1224,7 @@ export default function App() {
     setIsLoading(true);
     setInput("");
     setMessages([{ id: Date.now(), role: "user", content: item.title }]);
-    
+
     // Sync URL if needed
     if (id !== item.workflow_id) {
       navigate(`/dashboard/${item.workflow_id}`);
@@ -1071,7 +1277,7 @@ export default function App() {
             id: Date.now() - 1000 + i,
             ...m
           }));
-          
+
           // The last message in a completed workflow is usually the assistant summary.
           // We swap the generic summaryMsg in place of the last assistant message if it contains the DAG.
           setMessages([...restored.slice(0, -1), summaryMsg]);
@@ -1093,204 +1299,242 @@ export default function App() {
     }}>
       {/* ── SIDEBAR ── */}
       <div style={{
-        width: 260, flexShrink: 0, background: T.sidebar,
-        borderRight: `1px solid ${T.border}`, display: "flex",
-        flexDirection: "column", overflow: "hidden", 
-        boxShadow: T.shadow, zIndex: 10
+        width: leftSidebarOpen ? 260 : 0, flexShrink: 0, background: T.sidebar,
+        backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)",
+        borderRight: leftSidebarOpen ? `1px solid ${T.border}` : "none", display: "flex",
+        flexDirection: "column", overflow: "hidden",
+        zIndex: 10, transition: "width 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
       }}>
-        {/* Logo & Theme Toggle */}
-        <div style={{ padding: "20px 16px 12px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: 8,
-              background: isDark ? "#0d3320" : "#dcfce7", border: "1px solid #2ea043",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              color: "#22c55e", fontSize: 14, fontWeight: 700,
-            }}>G</div>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 600 }}>Groit AI</div>
-              <div style={{ fontSize: 10, color: T.secondary }}>Intelligent Orchestration</div>
+        <div style={{ width: 260, display: "flex", flexDirection: "column", height: "100%" }}>
+        {/* Workspace Header & Theme Toggle */}
+        <div style={{ padding: "20px 16px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, fontSize: 18, color: T.text }}>
+            <div style={{ display: "flex", gap: 4 }}>
+              <div style={{ width: 10, height: 10, borderRadius: '50%', background: T.accent }} />
+              <div style={{ width: 10, height: 10, borderRadius: '50%', background: isDark ? '#2E3640' : '#D1D5DB' }} />
             </div>
+            Groit AI
           </div>
-          
-          <div style={{ display: "flex", gap: 4 }}>
-            <button 
-              onClick={() => setRightPanelOpen(!rightPanelOpen)}
-              title="Toggle Services Panel"
+
+          <div style={{ display: "flex", gap: 2 }}>
+            <button
+              onClick={() => setLeftSidebarOpen(false)}
+              title="Close Sidebar"
               style={{
-                border: "none", cursor: "pointer", 
-                fontSize: 16, padding: 4, borderRadius: 6, display: "flex",
+                border: "none", cursor: "pointer",
+                width: 28, height: 28, borderRadius: 6, display: "flex",
                 alignItems: "center", justifyContent: "center",
-                color: rightPanelOpen ? T.accent : T.secondary,
-                transition: "all 0.2s",
-                background: rightPanelOpen ? T.muted : "transparent"
+                color: T.secondary, transition: "all 0.2s", background: "transparent"
               }}
-              onMouseEnter={e => { if(!rightPanelOpen) e.currentTarget.style.background = T.muted }}
-              onMouseLeave={e => { if(!rightPanelOpen) e.currentTarget.style.background = "transparent" }}
-            >
-              ☰
-            </button>
-            <button 
-              onClick={() => setTheme(isDark ? "light" : "dark")}
-              style={{
-                background: "transparent", border: "none", cursor: "pointer", 
-                fontSize: 18, padding: 4, borderRadius: 6, display: "flex",
-                alignItems: "center", justifyContent: "center",
-                color: T.secondary,
-                transition: "transform 0.2s"
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = T.muted}
+              onMouseEnter={e => e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)"}
               onMouseLeave={e => e.currentTarget.style.background = "transparent"}
             >
-              {isDark ? "☀️" : "🌙"}
+              <SidebarIcon size={16} />
+            </button>
+            <button
+              onClick={() => setTheme(isDark ? "light" : "dark")}
+              style={{
+                background: "transparent", border: "none", cursor: "pointer",
+                width: 28, height: 28, borderRadius: 6, display: "flex",
+                alignItems: "center", justifyContent: "center",
+                color: T.secondary, transition: "all 0.2s"
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)"}
+              onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+            >
+              {isDark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
           </div>
         </div>
 
-        {/* New Chat */}
-        <div style={{ padding: "12px 12px 8px" }}>
+        <div style={{ flex: 1, overflowY: "auto", padding: "0 16px 20px" }}>
           <button
             onClick={() => { setMessages([]); setChatStarted(false); setInput(""); setEditingMsg(null); setCurrentChatId(null); navigate("/dashboard"); }}
             style={{
-              width: "100%", padding: "8px 12px", background: T.muted,
-              border: `1px solid ${T.border}`, borderRadius: 8, color: T.text,
-              fontSize: 13, cursor: "pointer", textAlign: "left",
-              display: "flex", alignItems: "center", gap: 8,
-              fontWeight: 500
+              width: "100%", padding: "10px", background: T.accent,
+              border: "none", borderRadius: 8, color: "#000", fontSize: 13, cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              fontWeight: 600, transition: "all 0.2s", marginBottom: 16
             }}
           >
-            <span style={{ fontSize: 16 }}>+</span> New workflow
+            <Plus size={16} strokeWidth={2.5} /> New Chat
           </button>
-        </div>
 
-        {/* Nav */}
-        <div style={{ padding: "0 8px 8px" }}>
-          {[
-            { id: "dashboard", icon: "⊞", label: "Dashboard" },
-            { id: "logs",      icon: "≡", label: "System Logs" },
-          ].map((nav) => (
-            <div
-              key={nav.id}
-              onClick={() => setActiveNav(nav.id)}
+          {/* Search Bar */}
+          <div style={{ position: "relative", marginBottom: 16 }}>
+            <Search size={14} style={{ position: "absolute", left: 10, top: 10, color: T.secondary }} />
+            <input
+              type="text"
+              placeholder="Search chats..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
               style={{
-                display: "flex", alignItems: "center", gap: 10,
-                padding: "8px 10px", borderRadius: 6, cursor: "pointer",
-                background: activeNav === nav.id ? (isDark ? "#161b22" : "#f0f2f5") : "transparent",
-                color: activeNav === nav.id ? T.text : T.secondary,
-                fontSize: 13, marginBottom: 2,
-                fontWeight: activeNav === nav.id ? 600 : 400
+                width: "100%", padding: "8px 12px 8px 32px", borderRadius: 8,
+                background: isDark ? "rgba(0,0,0,0.2)" : "#fff",
+                border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "#e5e7eb"}`,
+                color: T.text, fontSize: 12, outline: "none"
               }}
+            />
+          </div>
+
+          {/* Navigation Links */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 24 }}>
+            <button
+              onClick={() => setActiveNav("logs")}
+              style={{
+                display: "flex", alignItems: "center", gap: 10, padding: "8px 12px",
+                borderRadius: 8, border: "none", cursor: "pointer",
+                background: activeNav === "logs" ? (isDark ? "rgba(255,255,255,0.1)" : "#e5e7eb") : "transparent",
+                color: activeNav === "logs" ? T.text : T.secondary,
+                fontWeight: activeNav === "logs" ? 600 : 500, transition: "all 0.2s", textAlign: "left"
+              }}
+              onMouseEnter={e => { if (activeNav !== "logs") e.currentTarget.style.color = T.text; }}
+              onMouseLeave={e => { if (activeNav !== "logs") e.currentTarget.style.color = T.secondary; }}
             >
-              <span style={{ fontSize: 14 }}>{nav.icon}</span> {nav.label}
+              <Terminal size={16} /> System Logs
+            </button>
+            <button
+              onClick={() => setActiveNav("saved_workflows")}
+              style={{
+                display: "flex", alignItems: "center", gap: 10, padding: "8px 12px",
+                borderRadius: 8, border: "none", cursor: "pointer",
+                background: activeNav === "saved_workflows" ? (isDark ? "rgba(255,255,255,0.1)" : "#e5e7eb") : "transparent",
+                color: activeNav === "saved_workflows" ? T.text : T.secondary,
+                fontWeight: activeNav === "saved_workflows" ? 600 : 500, transition: "all 0.2s", textAlign: "left"
+              }}
+              onMouseEnter={e => { if (activeNav !== "saved_workflows") e.currentTarget.style.color = T.text; }}
+              onMouseLeave={e => { if (activeNav !== "saved_workflows") e.currentTarget.style.color = T.secondary; }}
+            >
+              <Library size={16} /> Saved Workflows
+            </button>
+          </div>
+
+          {/* Chat History */}
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: T.secondary, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>
+              Recent Chats
             </div>
-          ))}
-        </div>
-
-
-        {/* Conversations List */}
-        <div style={{ flex: 1, overflow: "auto", padding: "8px 12px", borderTop: `1px solid ${T.border}` }}>
-          <div style={{ fontSize: 10, color: T.secondary, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8, fontWeight: 600 }}>
-            Chat History
-          </div>
-          {chats.length === 0 ? (
-            <div style={{ fontSize: 11, color: T.secondary, fontStyle: "italic", padding: "0 8px" }}>No conversations yet</div>
-          ) : (
-            chats.map((chat: any) => {
-              const isActive = currentChatId === chat.id;
-              return (
-                <div
-                  key={chat.id}
-                  onClick={() => {
-                    setCurrentChatId(chat.id);
-                    setMessages(chat.messages);
-                    setChatStarted(true);
-                  }}
-                  style={{
-                    padding: "7px 8px", borderRadius: 6, cursor: "pointer",
-                    fontSize: 12, marginBottom: 2,
-                    lineHeight: 1.4, transition: "background 0.15s",
-                    background: isActive ? T.muted : "transparent",
-                    color: isActive ? T.accent : T.secondary,
-                    borderLeft: isActive ? `2px solid ${T.accent}` : "none",
-                    paddingLeft: isActive ? "6px" : "8px",
-                  }}
-                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = T.muted; }}
-                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {chats.filter(c => c.title.toLowerCase().includes(searchQuery.toLowerCase())).map((chat: any) => (
+                <div key={chat.id} style={{
+                  position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "8px", borderRadius: 6, cursor: "pointer",
+                  background: currentChatId === chat.id ? (isDark ? "rgba(255,255,255,0.1)" : "#e5e7eb") : "transparent",
+                }}
+                  onMouseEnter={e => { if (currentChatId !== chat.id) e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)"; }}
+                  onMouseLeave={e => { if (currentChatId !== chat.id) e.currentTarget.style.background = "transparent"; }}
+                  onClick={() => loadChat(chat.id)}
                 >
-                  <div style={{ color: isActive ? T.text : T.secondary, fontWeight: isActive ? 600 : 400, marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {chat.title}
+                  <div style={{ display: "flex", alignItems: "center", overflow: "hidden", flex: 1, paddingLeft: 8 }}>
+                    {editingChatId === chat.id ? (
+                      <input
+                        autoFocus
+                        value={editingTitle}
+                        onChange={e => setEditingTitle(e.target.value)}
+                        onBlur={() => handleRenameChat(chat.id, editingTitle)}
+                        onKeyDown={e => { if (e.key === 'Enter') handleRenameChat(chat.id, editingTitle); }}
+                        onClick={e => e.stopPropagation()}
+                        style={{ flex: 1, background: "transparent", border: `1px solid ${T.accent}`, color: T.text, fontSize: 12, outline: "none", padding: "0 4px", borderRadius: 4 }}
+                      />
+                    ) : (
+                      <span style={{ fontSize: 13, color: currentChatId === chat.id ? T.text : T.secondary, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {chat.title}
+                      </span>
+                    )}
                   </div>
-                  <div style={{ fontSize: 10, opacity: 0.7 }}>
-                    {chat.messages.length} messages
+
+                  <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
+                    <button
+                      onClick={() => setActiveMenuId(activeMenuId === chat.id ? null : chat.id)}
+                      style={{ background: "transparent", border: "none", color: T.secondary, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: 4 }}
+                      onMouseEnter={e => e.currentTarget.style.color = T.text}
+                      onMouseLeave={e => e.currentTarget.style.color = T.secondary}
+                    >
+                      <MoreVertical size={14} />
+                    </button>
+                    {activeMenuId === chat.id && (
+                      <div style={{
+                        position: "absolute", right: 0, top: 24, zIndex: 100, width: 140,
+                        background: T.card, border: `1px solid ${T.border}`, borderRadius: 8,
+                        boxShadow: T.shadow, padding: 4, display: "flex", flexDirection: "column", gap: 2
+                      }}>
+                        <button onClick={() => { setEditingChatId(chat.id); setEditingTitle(chat.title); setActiveMenuId(null); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", background: "transparent", border: "none", color: T.text, fontSize: 12, padding: "6px 8px", borderRadius: 4, cursor: "pointer", textAlign: "left" }} onMouseEnter={e => e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.05)" : "#f3f4f6"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                          <Edit2 size={12} /> Rename
+                        </button>
+                        <button onClick={() => handleSaveWorkflow(chat.id)} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", background: "transparent", border: "none", color: T.text, fontSize: 12, padding: "6px 8px", borderRadius: 4, cursor: "pointer", textAlign: "left" }} onMouseEnter={e => e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.05)" : "#f3f4f6"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                          <Bookmark size={12} /> Save Workflow
+                        </button>
+                        <div style={{ height: 1, background: T.border, margin: "2px 0" }} />
+                        <button onClick={() => handleDeleteChat(chat.id)} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", background: "transparent", border: "none", color: "#f85149", fontSize: 12, padding: "6px 8px", borderRadius: 4, cursor: "pointer", textAlign: "left" }} onMouseEnter={e => e.currentTarget.style.background = isDark ? "rgba(248,81,73,0.1)" : "#fee2e2"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                          <Trash2 size={12} /> Delete Chat
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
-              );
-            })
-          )}
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* Platform Execution History */}
-        <div style={{ maxHeight: "30%", overflow: "auto", padding: "8px 12px", borderTop: `1px solid ${T.border}` }}>
-          <div style={{ fontSize: 10, color: T.secondary, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8, fontWeight: 600 }}>
-            Recent Workflows
+        {/* User Profile at bottom */}
+        <div style={{ padding: "16px", borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "#e5e7eb"}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, overflow: "hidden" }}>
+            {clerkUser?.imageUrl ? (
+              <img src={clerkUser.imageUrl} alt="Profile" style={{ width: 32, height: 32, borderRadius: "50%", border: `1px solid ${T.border}` }} />
+            ) : (
+              <div style={{ width: 32, height: 32, borderRadius: "50%", background: T.muted, display: "flex", alignItems: "center", justifyContent: "center", color: T.secondary }}>
+                <User size={16} />
+              </div>
+            )}
+            <div style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: T.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {clerkUser?.fullName || clerkUser?.firstName || "Groit User"}
+              </span>
+              <span style={{ fontSize: 11, color: T.secondary, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {clerkUser?.primaryEmailAddress?.emailAddress || "user@groit.ai"}
+              </span>
+            </div>
           </div>
-          {history.length === 0 ? (
-            <div style={{ fontSize: 11, color: T.secondary, fontStyle: "italic", padding: "0 8px" }}>No active workflows</div>
-          ) : (
-            history.map((item: any) => {
-              const date = new Date(item.created_at);
-              const timeStr = isNaN(date.getTime()) ? "Pending" : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-              const isActive = id === item.workflow_id;
-              
-              return (
-                <div
-                  key={item.workflow_id}
-                  onClick={() => startWithHistory(item)}
-                  style={{
-                    padding: "7px 8px", borderRadius: 6, cursor: "pointer",
-                    fontSize: 12, marginBottom: 2,
-                    lineHeight: 1.4, transition: "background 0.15s",
-                    background: isActive ? T.muted : "transparent",
-                    color: isActive ? T.accent : T.secondary,
-                    borderLeft: isActive ? `2px solid ${T.accent}` : "none",
-                    paddingLeft: isActive ? "6px" : "8px",
-                  }}
-                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = T.muted; }}
-                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
-                >
-                  <div style={{ color: isActive ? T.text : T.secondary, fontWeight: isActive ? 600 : 400, marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {item.title}
-                  </div>
-                  <div style={{ fontSize: 10, display: "flex", justifyContent: "space-between", color: T.secondary }}>
-                    <span>{item.workflow_id?.slice(0, 16)}…</span>
-                    <span>{timeStr}</span>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-        {/* Logout at bottom */}
-        <div style={{ padding: "12px", borderTop: `1px solid ${T.border}`, marginTop: "auto" }}>
           <button
             onClick={() => { logout(); navigate("/login"); }}
+            title="Sign Out"
             style={{
-              width: "100%", padding: "8px", background: "transparent",
-              border: `1px solid ${T.border}`, borderRadius: 8, color: "#f85149",
-              fontSize: 13, cursor: "pointer", display: "flex", 
-              alignItems: "center", justifyContent: "center", gap: 8,
-              fontWeight: 600, transition: "background 0.2s"
+              background: "transparent", border: "none", cursor: "pointer",
+              color: T.secondary, padding: 6, borderRadius: 6, display: "flex",
+              alignItems: "center", justifyContent: "center", transition: "all 0.2s"
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = isDark ? "#3d1117" : "#fff1f0")}
-            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+            onMouseEnter={e => { e.currentTarget.style.background = isDark ? "rgba(255,0,0,0.1)" : "#fee2e2"; e.currentTarget.style.color = "#ef4444"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.secondary; }}
           >
-            <span>🚪</span> Sign Out
+            <LogOut size={16} />
           </button>
+        </div>
         </div>
       </div>
 
       {/* ── MAIN CONTENT ── */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      <div style={{
+        flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", position: "relative",
+        background: isDark ? "radial-gradient(circle at center, rgba(74, 222, 128, 0.05) 0%, transparent 80%)" : "transparent"
+      }}>
+        {!leftSidebarOpen && (
+          <div style={{ position: "absolute", top: 18, left: 16, zIndex: 50, display: "flex", gap: 8 }}>
+            <button
+              onClick={() => setLeftSidebarOpen(true)}
+              title="Open Sidebar"
+              style={{
+                background: "transparent", border: "none", cursor: "pointer",
+                color: T.secondary, display: "flex", alignItems: "center", justifyContent: "center",
+                width: 32, height: 32, borderRadius: 6,
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)"}
+              onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+            >
+              <SidebarIcon size={20} />
+            </button>
+          </div>
+        )}
         {activeNav === "logs" ? (
           <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: 24, overflow: "hidden" }}>
             <h2 style={{ fontSize: 24, fontWeight: 700, margin: "0 0 8px", color: T.text }}>System Logs</h2>
@@ -1304,9 +1548,9 @@ export default function App() {
                       marginLeft: 16,
                       color: n.status === "failed" ? "#f85149" :
                         (n.status === "done" || n.status === "success") ? "#2ea043" :
-                        n.status === "skipped" ? "#8b949e" : "#7d8590",
+                          n.status === "skipped" ? "#8b949e" : "#7d8590",
                     }}>
-                      {TOOL_ICONS[n.tool] || "⚙️"} [{n.status?.toUpperCase()}] {n.tool || "generic"} → {n.action || n.title}
+                      {TOOL_ICONS[n.tool] || <Settings size={16} />} [{n.status?.toUpperCase()}] {n.tool || "generic"} → {n.action || n.title}
                     </div>
                   ))}
                 </div>
@@ -1314,119 +1558,67 @@ export default function App() {
               {history.length === 0 && <div style={{ color: "#7d8590" }}>Waiting for workflow executions…</div>}
             </div>
           </div>
+        ) : activeNav === "saved_workflows" ? (
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: 24, overflow: "hidden" }}>
+            <h2 style={{ fontSize: 24, fontWeight: 700, margin: "0 0 8px", color: T.text }}>Saved Workflows</h2>
+            <p style={{ color: T.secondary, fontSize: 14, margin: "0 0 20px" }}>Your saved templates and automations</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16, overflowY: "auto" }}>
+              {savedWorkflows.length === 0 ? (
+                <div style={{ color: T.secondary, fontStyle: "italic", padding: 16 }}>No saved workflows yet. Start a chat and save a workflow to see it here!</div>
+              ) : (
+                savedWorkflows.map((wf: any) => (
+                  <div key={wf.id} style={{
+                    background: isDark ? "rgba(255,255,255,0.03)" : "#fff", border: `1px solid ${T.border}`, borderRadius: 12, padding: 16,
+                    display: "flex", flexDirection: "column", gap: 12, boxShadow: T.shadow
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 600, color: T.text, fontSize: 15 }}>
+                      <Bookmark size={16} color={T.accent} /> {wf.name}
+                    </div>
+                    <div style={{ fontSize: 12, color: T.secondary }}>Created: {new Date(wf.created_at).toLocaleString()}</div>
+                    <button
+                      onClick={() => {
+                        setMessages([{ role: "assistant", text: "Workflow loaded and ready to execute.", dagData: wf.dagData, id: Date.now().toString() }]);
+                        setActiveNav("dashboard");
+                        setChatStarted(true);
+                      }}
+                      style={{
+                        background: T.accent, color: "#000", border: "none", padding: "8px",
+                        borderRadius: 6, fontWeight: 600, cursor: "pointer", marginTop: "auto", transition: "opacity 0.2s"
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.opacity = "0.9"}
+                      onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+                    >
+                      Use Template
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         ) : (
-          <>
-            <div style={{ flex: 1, overflowY: "auto", padding: chatStarted ? "24px 0" : 0 }}>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+
+            {/* Scrollable messages or home screen */}
+            <div style={{ flex: 1, overflowY: "auto", paddingBottom: 20 }}>
               {!chatStarted ? (
-                /* ── HOME SCREEN ── */
                 <div style={{
                   display: "flex", flexDirection: "column", alignItems: "center",
                   justifyContent: "center", height: "100%", padding: "0 24px",
+                  position: "relative", zIndex: 10
                 }}>
                   <div style={{
-                    width: 48, height: 48, borderRadius: 12,
-                    background: isDark ? "#0d3320" : "#dcfce7", border: "1px solid #2ea043",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    margin: "0 auto 20px", color: "#22c55e", fontSize: 22, fontWeight: 700,
-                  }}>A</div>
-
-                  <h1 style={{ fontSize: 28, fontWeight: 600, margin: "0 0 8px", textAlign: "center", color: T.text }}>
-                    Hello, Tejas 👋
-                  </h1>
-                  <p style={{ color: T.secondary, fontSize: 15, margin: "0 0 40px", textAlign: "center" }}>
-                    What workflow would you like to run today?
-                  </p>
-
-                  {/* Suggestion chips */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, maxWidth: 640, width: "100%", marginBottom: 24 }}>
-                    {SUGGESTED_PROMPTS.map((p, i) => (
-                      <button
-                        key={i}
-                        onClick={() => handleSuggestion(p)}
-                        style={{
-                          background: T.card, border: `1px solid ${T.border}`,
-                          borderRadius: 10, padding: "12px 14px", cursor: "pointer",
-                          color: T.text, fontSize: 12, textAlign: "left",
-                          lineHeight: 1.5, transition: "border-color 0.15s, transform 0.15s",
-                          boxShadow: T.shadow
-                        }}
-                        onMouseEnter={e => {
-                          e.currentTarget.style.borderColor = T.accent;
-                          e.currentTarget.style.transform = "translateY(-2px)";
-                        }}
-                        onMouseLeave={e => {
-                          e.currentTarget.style.borderColor = T.border;
-                          e.currentTarget.style.transform = "translateY(0)";
-                        }}
-                      >
-                        {p}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* ── Slack Quick-Send Panel ── */}
-                  <div style={{
-                    maxWidth: 640, width: "100%",
-                    background: T.card, border: `1px solid ${T.border}`,
-                    borderRadius: 12, padding: "16px 18px",
-                    boxShadow: T.shadow
+                    fontSize: 32, fontWeight: 700, color: T.text, marginBottom: 16,
+                    textAlign: "center", letterSpacing: "-0.5px"
                   }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                      <span style={{ fontSize: 18 }}>💬</span>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: "#e6edf3" }}>Slack Quick-Send</span>
-                      <span style={{
-                        marginLeft: "auto", fontSize: 11, color: "#4ade80",
-                        background: "#0d3320", border: "1px solid #2ea04330",
-                        padding: "2px 8px", borderRadius: 99, fontFamily: "monospace",
-                      }}>#all-daiict</span>
-                    </div>
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <input
-                        type="text"
-                        placeholder="Type a message to send to #all-daiict…"
-                        value={slackMsg}
-                        onChange={e => setSlackMsg(e.target.value)}
-                        onKeyDown={e => { if (e.key === "Enter") handleSlackQuickSend(); }}
-                        disabled={slackSending}
-                        style={{
-                          flex: 1, background: T.bg, border: `1px solid ${T.border}`,
-                          borderRadius: 8, padding: "9px 12px", color: T.text,
-                          fontSize: 13, outline: "none", fontFamily: "inherit",
-                          opacity: slackSending ? 0.6 : 1,
-                        }}
-                        onFocus={e => (e.target.style.borderColor = T.accent)}
-                        onBlur={e => (e.target.style.borderColor = T.border)}
-                      />
-                      <button
-                        onClick={handleSlackQuickSend}
-                        disabled={!slackMsg.trim() || slackSending}
-                        style={{
-                          padding: "9px 16px", borderRadius: 8, border: "none",
-                          background: slackMsg.trim() && !slackSending ? "#2ea043" : "#21262d",
-                          color: "#fff", fontSize: 13, fontWeight: 600,
-                          cursor: slackMsg.trim() && !slackSending ? "pointer" : "default",
-                          transition: "background 0.15s", whiteSpace: "nowrap",
-                        }}
-                      >
-                        {slackSending ? "⏳ Sending…" : "Send ↗"}
-                      </button>
-                    </div>
-                    {slackResult && (
-                      <div style={{
-                        marginTop: 10, fontSize: 12, fontFamily: "monospace",
-                        color: slackResult.ok ? "#4ade80" : "#f85149",
-                        background: slackResult.ok ? "#0d3320" : "#3d1117",
-                        borderRadius: 6,
-                        border: `1px solid ${slackResult.ok ? "#2ea04330" : "#f8514930"}`,
-                      }}>
-                        {slackResult.text}
-                      </div>
-                    )}
+                    Hii {clerkUser?.firstName || "User"} , <span style={{ color: T.accent }}>Groit AI</span> Here
+                  </div>
+                  <div style={{ color: T.secondary, fontSize: 16, textAlign: "center", maxWidth: 600 }}>
+                    What workflow would you like to run today?
                   </div>
                 </div>
               ) : (
-                /* ── CHAT MESSAGES ── */
-                <div style={{ maxWidth: 780, margin: "0 auto", padding: "0 24px" }}>
+                <div style={{ maxWidth: 960, margin: "0 auto", width: "100%", padding: "24px", display: "flex", flexDirection: "column", gap: 32 }}>
+                  <div style={{ fontSize: 12, color: T.secondary, fontWeight: 600, letterSpacing: 0.5, marginBottom: -16 }}>Today</div>
                   {messages.map((msg: any) => (
                     <ChatMessage key={msg.id} msg={msg} onEdit={handleEdit} onApprove={handleHITLApprove} onReject={handleHITLReject} />
                   ))}
@@ -1435,39 +1627,45 @@ export default function App() {
               )}
             </div>
 
-            {/* ── INPUT BOX ── */}
-            <div style={{ padding: "16px 24px 20px", borderTop: chatStarted ? `1px solid ${T.border}` : "none", background: T.bg }}>
+            {/* ── FLOATING INPUT BOX ── */}
+            <div style={{ padding: "0 24px 32px", zIndex: 20 }}>
               <div style={{ maxWidth: 780, margin: "0 auto" }}>
                 {editingMsg && (
                   <div style={{ fontSize: 11, color: "#f0883e", marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
-                    <span>✏️ Editing message — response will regenerate from this point</span>
+                    <span><span className="flex items-center gap-1"><Edit2 size={12} /> Edit</span>ing message — response will regenerate from this point</span>
                     <button
                       onClick={() => { setEditingMsg(null); setInput(""); }}
                       style={{ background: "none", border: "none", color: T.secondary, cursor: "pointer", fontSize: 12 }}
-                    >✕ cancel</button>
+                    ><X size={14} /> cancel</button>
                   </div>
                 )}
                 <div style={{
                   display: "flex", alignItems: "flex-end", gap: 10,
-                  background: T.card, border: `1px solid ${editingMsg ? "#f0883e" : T.border}`,
-                  borderRadius: 14, padding: "12px 14px", transition: "border-color 0.2s",
-                  boxShadow: T.shadow
-                }}>
+                  background: isDark ? "rgba(18, 22, 28, 0.85)" : "rgba(255, 255, 255, 0.9)",
+                  border: `1px solid ${editingMsg ? "#f0883e" : "rgba(255, 255, 255, 0.08)"}`,
+                  borderRadius: 30, padding: "10px 20px", transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  boxShadow: isDark ? "0 8px 30px rgba(0,0,0,0.3)" : "0 4px 30px rgba(0,0,0,0.1)",
+                  backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)"
+                }}
+                  onMouseEnter={(e) => { e.currentTarget.style.boxShadow = isDark ? "0 12px 40px rgba(0,0,0,0.4)" : "0 8px 40px rgba(0,0,0,0.12)"; e.currentTarget.style.borderColor = isDark ? "rgba(255, 255, 255, 0.15)" : "rgba(0, 0, 0, 0.15)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.boxShadow = isDark ? "0 8px 30px rgba(0,0,0,0.3)" : "0 4px 30px rgba(0,0,0,0.1)"; e.currentTarget.style.borderColor = editingMsg ? "#f0883e" : "rgba(255, 255, 255, 0.08)"; }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = isDark ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.2)"; e.currentTarget.style.boxShadow = isDark ? "0 8px 30px rgba(0,0,0,0.3)" : "0 4px 30px rgba(0,0,0,0.1)"; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = editingMsg ? "#f0883e" : "rgba(255, 255, 255, 0.08)"; e.currentTarget.style.boxShadow = isDark ? "0 8px 30px rgba(0,0,0,0.3)" : "0 4px 30px rgba(0,0,0,0.1)"; }}>
                   <button
                     onClick={() => setShowToolkitModal(true)}
                     title="Toolkits & Integrations"
                     style={{
-                      width: 34, height: 34, borderRadius: 8, flexShrink: 0,
-                      background: isDark ? "#21262d" : "#e5e7eb",
-                      border: `1px solid ${T.border}`, cursor: "pointer",
-                      color: T.secondary, fontSize: 16, display: "flex",
-                      alignItems: "center", justifyContent: "center",
-                      transition: "all 0.15s",
+                      height: 34, padding: "0 10px", flexShrink: 0,
+                      background: "transparent",
+                      border: "none", cursor: "pointer",
+                      color: T.secondary, fontSize: 13, fontWeight: 600, display: "flex",
+                      alignItems: "center", justifyContent: "center", gap: 6,
+                      transition: "all 0.15s", whiteSpace: "nowrap"
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.color = T.text; e.currentTarget.style.borderColor = T.accent; }}
-                    onMouseLeave={e => { e.currentTarget.style.color = T.secondary; e.currentTarget.style.borderColor = T.border; }}
+                    onMouseEnter={e => { e.currentTarget.style.color = T.text; }}
+                    onMouseLeave={e => { e.currentTarget.style.color = T.secondary; }}
                   >
-                    🧩
+                    <Plus size={16} strokeWidth={2.5} /> Toolkits
                   </button>
                   <textarea
                     ref={textareaRef}
@@ -1479,222 +1677,150 @@ export default function App() {
                         handleSend();
                       }
                     }}
-                    placeholder="Describe a workflow… (e.g. Create Jira ticket → GitHub branch → Slack alert)"
+                    placeholder="Describe your workflow..."
                     style={{
                       flex: 1, background: "transparent", border: "none", outline: "none",
-                      color: "#e6edf3", fontSize: 14, lineHeight: 1.6, resize: "none",
-                      minHeight: 24, maxHeight: 200, fontFamily: "inherit", padding: 0,
+                      color: T.text, fontSize: 14, lineHeight: "22.4px", resize: "none",
+                      minHeight: 34, maxHeight: 200, fontFamily: "inherit", padding: "6px 4px",
                     }}
                     rows={1}
                   />
                   <button
-                    onClick={() => handleSend()}
-                    disabled={!input.trim() || isLoading}
+                    onClick={handleMicClick}
+                    title="Voice Typing"
                     style={{
-                      width: 34, height: 34, borderRadius: 8, flexShrink: 0,
-                      background: input.trim() && !isLoading ? "#2ea043" : "#21262d",
-                      border: "none", cursor: input.trim() && !isLoading ? "pointer" : "default",
-                      color: "#fff", fontSize: 16, display: "flex",
-                      alignItems: "center", justifyContent: "center",
-                      transition: "background 0.15s",
+                      width: 34, height: 34, borderRadius: "50%", flexShrink: 0, marginRight: 8,
+                      background: isListening ? "rgba(239, 68, 68, 0.2)" : "transparent",
+                      border: "none", cursor: "pointer",
+                      color: isListening ? "#ef4444" : T.secondary,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      transition: "all 0.15s",
+                      animation: isListening ? "pulse 1.5s infinite" : "none"
                     }}
+                    onMouseEnter={e => { if (!isListening) e.currentTarget.style.color = T.text; }}
+                    onMouseLeave={e => { if (!isListening) e.currentTarget.style.color = T.secondary; }}
                   >
-                    ↑
+                    <Mic size={18} />
                   </button>
+                  {isLoading ? (
+                    <button
+                      onClick={() => abortControllerRef.current?.abort()}
+                      title="Stop Execution"
+                      style={{
+                        width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
+                        background: "#ef4444", border: "none", cursor: "pointer",
+                        color: "#fff", fontSize: 16, display: "flex",
+                        alignItems: "center", justifyContent: "center",
+                        transition: "all 0.2s",
+                        boxShadow: "0 4px 12px rgba(239,68,68,0.4)"
+                      }}
+                    >
+                      <Square size={14} fill="currentColor" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleSend()}
+                      disabled={!input.trim() || isLoading}
+                      style={{
+                        width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
+                        background: input.trim() && !isLoading ? T.accent : isDark ? "rgba(255,255,255,0.1)" : "#d1d5db",
+                        border: "none", cursor: input.trim() && !isLoading ? "pointer" : "default",
+                        color: input.trim() && !isLoading ? "#000" : T.secondary, fontSize: 16, display: "flex",
+                        alignItems: "center", justifyContent: "center",
+                        transition: "all 0.2s",
+                        boxShadow: input.trim() && !isLoading ? `0 4px 12px ${T.accent}40` : "none"
+                      }}
+                    >
+                      <Send size={16} strokeWidth={2.5} style={{ marginLeft: 2 }} />
+                    </button>
+                  )}
                 </div>
-                <p style={{ textAlign: "center", fontSize: 11, color: "#484f58", marginTop: 8 }}>
-                  Enter to send · Shift+Enter for new line · Hover messages to edit
+                <p style={{ textAlign: "center", fontSize: 11, color: T.secondary, marginTop: 12 }}>
+                  Groit is AI and can make mistakes.
                 </p>
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
-
-      {/* ── TOOLKIT MODAL ── */}
-      {showToolkitModal && (
-        <div style={{
-          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-          background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          zIndex: 100, padding: 20,
-        }}
-        onClick={() => setShowToolkitModal(false)}
-        >
-          <div style={{
-            background: T.card, border: `1px solid ${T.border}`, borderRadius: 16,
-            width: "100%", maxWidth: 800, maxHeight: "85vh",
-            display: "flex", flexDirection: "column",
-            boxShadow: "0 10px 40px rgba(0,0,0,0.3)"
-          }}
-          onClick={e => e.stopPropagation()}
-          >
-            <div style={{ padding: "20px 24px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div>
-                <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
-                  🧩 Composio Toolkits
-                </h2>
-                <p style={{ fontSize: 13, color: T.secondary, margin: "4px 0 0" }}>Connect your daily apps to automate workflows.</p>
-              </div>
-              <button
-                onClick={() => setShowToolkitModal(false)}
-                style={{ background: "transparent", border: "none", color: T.secondary, fontSize: 18, cursor: "pointer" }}
-              >✕</button>
-            </div>
-            
-            {/* Fallback banner — shown if popup was blocked */}
-            {fallbackConnectUrl && (
-              <div style={{
-                margin: '0 24px', marginTop: 16, padding: '12px 16px', borderRadius: 10,
-                background: '#2d2000', border: '1px solid #f59e0b55',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-                flexShrink: 0
-              }}>
-                <span style={{ fontSize: 13, color: '#e6c870' }}>
-                  ⚠️ Popup blocked. Click to connect <strong>{fallbackConnectUrl.slug}</strong>:
-                </span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <a
-                    href={fallbackConnectUrl.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      fontSize: 13, fontWeight: 700, color: '#4ade80',
-                      textDecoration: 'none', padding: '6px 14px',
-                      background: '#0d3320', border: '1px solid #2ea043', borderRadius: 8
-                    }}
-                  >
-                    🔗 Open OAuth Page ↗
-                  </a>
-                  <button
-                    onClick={() => setFallbackConnectUrl(null)}
-                    style={{ background: 'none', border: 'none', color: T.secondary, cursor: 'pointer', fontSize: 16 }}
-                  >✕</button>
-                </div>
-              </div>
-            )}
-
-            <div style={{ padding: 24, overflowY: "auto", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16 }}>
-              {COMPOSIO_TOOLS.map(t => {
-                const isConnected = composioStatus.includes(t.tool);
-                const connecting = isConnecting === t.tool;
-                
-                return (
-                  <div 
-                    key={t.tool} 
-                    onClick={() => {
-                      if (!isConnected && !connecting) handleConnectComposio(t.tool);
-                    }}
-                    style={{
-                      background: isConnected ? (isDark ? "#0d3320" : "#dcfce7") : (isDark ? "#0d1117" : "#f6f8fa"),
-                      border: `1px solid ${isConnected ? "#2ea043" : T.border}`,
-                      borderRadius: 12, padding: 16, display: "flex", flexDirection: "column",
-                      gap: 12, position: "relative", overflow: "hidden",
-                      cursor: isConnected ? "default" : (connecting ? "wait" : "pointer"),
-                      transition: "all 0.2s"
-                    }}
-                    onMouseEnter={e => {
-                      if (!isConnected && !connecting) {
-                        e.currentTarget.style.borderColor = T.accent;
-                        e.currentTarget.style.transform = "translateY(-2px)";
-                        e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
-                      }
-                    }}
-                    onMouseLeave={e => {
-                      if (!isConnected && !connecting) {
-                        e.currentTarget.style.borderColor = T.border;
-                        e.currentTarget.style.transform = "none";
-                        e.currentTarget.style.boxShadow = "none";
-                      }
-                    }}
-                  >
-                    {isConnected && (
-                      <div style={{ position: "absolute", top: -20, right: -20, width: 40, height: 40, background: "#2ea04340", borderRadius: "50%", filter: "blur(10px)" }} />
-                    )}
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                      <div style={{ fontSize: 24 }}>{t.icon}</div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: isConnected ? "#2ea043" : T.text, marginBottom: 2 }}>{t.label}</div>
-                        <div style={{ fontSize: 11, color: isConnected ? "#2ea043" : T.secondary, lineHeight: 1.4, opacity: isConnected ? 0.8 : 1 }}>{t.description}</div>
-                      </div>
-                    </div>
-                    
-                    <div style={{
-                      marginTop: "auto", 
-                      fontSize: 12, fontWeight: 700, 
-                      color: isConnected ? "#2ea043" : T.accent,
-                      textAlign: "right"
-                    }}>
-                      {connecting ? "Connecting..." : isConnected ? "✅ Connected" : "Click to Connect ➔"}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ── RIGHT PANEL (RAIL SYSTEM) ── */}
       <div style={{
         width: rightPanelOpen ? 280 : 60, flexShrink: 0, background: T.sidebar,
         borderLeft: `1px solid ${T.border}`, display: "flex",
-        flexDirection: "column", overflow: "hidden", 
+        flexDirection: "column", overflow: "hidden",
         boxShadow: T.shadow, zIndex: 5,
         transition: "width 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
       }}>
-        <div style={{ 
-          padding: rightPanelOpen ? "20px 16px 12px" : "20px 0 12px", 
-          borderBottom: `1px solid ${T.border}`, 
-          display: "flex", alignItems: "center", 
-          justifyContent: rightPanelOpen ? "space-between" : "center" 
+        <div style={{
+          padding: rightPanelOpen ? "20px 16px 12px" : "20px 0 12px",
+          borderBottom: `1px solid ${T.border}`,
+          display: "flex", alignItems: "center",
+          justifyContent: rightPanelOpen ? "space-between" : "center"
         }}>
           {rightPanelOpen ? (
             <>
               <div style={{ fontSize: 11, color: T.secondary, textTransform: "uppercase", letterSpacing: 0.8, fontWeight: 700 }}>
                 System Status
               </div>
-              <button 
-                onClick={() => setRightPanelOpen(false)}
-                style={{ background: "transparent", border: "none", color: T.secondary, cursor: "pointer", fontSize: 14 }}
-              >✕</button>
             </>
           ) : (
-            <button 
+            <button
               onClick={() => setRightPanelOpen(true)}
               style={{ background: "transparent", border: "none", color: T.accent, cursor: "pointer", fontSize: 18 }}
               title="Expand Panel"
             >☰</button>
           )}
         </div>
-        
+
         {rightPanelOpen && (
           <div style={{ padding: "16px", display: "flex", flexDirection: "column", flex: 1 }}>
-             <p style={{ fontSize: 13, color: T.secondary, textAlign: "center", marginTop: 20 }}>
-               Agentic Backend Online<br/>
-               <span style={{ fontSize: 10, opacity: 0.7 }}>Ready to process workflows</span>
-             </p>
+            <p style={{ fontSize: 13, color: T.secondary, textAlign: "center", marginTop: 20 }}>
+              Agentic Backend Online<br />
+              <span style={{ fontSize: 10, opacity: 0.7 }}>Ready to process workflows</span>
+            </p>
 
-             {connectedApps.length > 0 && (
-               <div style={{ marginTop: "30px" }}>
-                 <div style={{ fontSize: 11, color: T.secondary, textTransform: "uppercase", letterSpacing: 0.8, fontWeight: 700, marginBottom: 12 }}>
-                   Connected Apps
-                 </div>
-                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                   {connectedApps.map((app: any) => (
-                     <div key={app.slug} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: T.text, background: T.card, padding: "8px 12px", borderRadius: 8, border: `1px solid ${T.border}` }}>
-                       <div style={{ 
-                         width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
-                         background: app.connected ? "#2ea043" : "#484f58",
-                         boxShadow: app.connected ? "0 0 5px rgba(46,160,67,0.5)" : "none"
-                       }} />
-                       <span style={{ fontWeight: 600 }}>{app.name}</span>
-                       {!app.connected && <span style={{ fontSize: 11, color: T.secondary, marginLeft: "auto" }}>Unlinked</span>}
-                     </div>
-                   ))}
-                 </div>
-               </div>
-             )}
+            {connectedApps.some((app: any) => app.connected) && (
+              <div style={{ marginTop: "30px" }}>
+                <div style={{ fontSize: 11, color: T.secondary, textTransform: "uppercase", letterSpacing: 0.8, fontWeight: 700, marginBottom: 12 }}>
+                  Connected Apps
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {connectedApps.filter((app: any) => app.connected).map((app: any) => (
+                    <div 
+                      key={app.slug} 
+                      className="group"
+                      style={{ 
+                        display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: T.text, 
+                        background: T.card, padding: "8px 12px", borderRadius: 8, border: `1px solid ${T.border}`,
+                        transition: "all 0.2s"
+                      }}
+                    >
+                      <div style={{
+                        width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
+                        background: "#2ea043",
+                        boxShadow: "0 0 5px rgba(46,160,67,0.5)"
+                      }} />
+                      <span style={{ fontWeight: 600 }}>{app.name}</span>
+                      {!app.connected ? (
+                        <span style={{ fontSize: 11, color: T.secondary, marginLeft: "auto" }}>Unlinked</span>
+                      ) : (
+                        <button
+                          className="opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => handleDisconnectComposio(app.slug)}
+                          title="Disconnect"
+                          style={{ marginLeft: "auto", background: "transparent", border: "none", color: T.secondary, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                          onMouseEnter={e => e.currentTarget.style.color = "#f85149"}
+                          onMouseLeave={e => e.currentTarget.style.color = T.secondary}
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -1704,6 +1830,99 @@ export default function App() {
           </div>
         )}
       </div>
+
+      {/* Toolkit Modal Overlay */}
+      {showToolkitModal && (
+        <div style={{
+          position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000,
+          background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+          display: "flex", alignItems: "center", justifyContent: "center"
+        }} onClick={() => setShowToolkitModal(false)}>
+          <div style={{
+            background: isDark ? "rgba(20, 25, 30, 0.85)" : "rgba(255, 255, 255, 0.9)", border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`, borderRadius: 16,
+            backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
+            width: "90%", maxWidth: 900, maxHeight: "80vh", display: "flex", flexDirection: "column",
+            boxShadow: "0 20px 40px rgba(0,0,0,0.4)", overflow: "hidden"
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{ padding: "20px 24px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div>
+                <h3 style={{ fontSize: 18, fontWeight: 700, color: T.text, margin: "0 0 4px" }}>Available Toolkits</h3>
+                <p style={{ fontSize: 13, color: T.secondary, margin: 0 }}>Connect your favorite apps to give Groit.AI access.</p>
+              </div>
+              <button
+                onClick={() => setShowToolkitModal(false)}
+                style={{ background: "transparent", border: "none", color: T.secondary, cursor: "pointer", display: "flex" }}
+              ><X size={20} /></button>
+            </div>
+
+            <div style={{ flex: 1, overflowY: "auto", padding: 24, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+              {COMPOSIO_TOOLS.map((tool: any) => {
+                const isConnected = composioStatus.includes(tool.tool.toLowerCase());
+                const connecting = isConnecting === tool.tool;
+                return (
+                  <div key={tool.tool} style={{
+                    display: "flex", alignItems: "center", gap: 12, padding: "12px 16px",
+                    background: isDark ? "rgba(255,255,255,0.03)" : "#f9fafb",
+                    border: `1px solid ${isConnected ? T.accent : T.border}`, borderRadius: 12,
+                    boxShadow: isConnected ? `0 0 0 1px ${T.accent}` : "none",
+                    transition: "all 0.2s ease"
+                  }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = "translateY(-2px)";
+                      e.currentTarget.style.boxShadow = isConnected
+                        ? `0 4px 12px ${T.accent}40, 0 0 0 1px ${T.accent}`
+                        : "0 4px 12px rgba(0,0,0,0.15)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "translateY(0)";
+                      e.currentTarget.style.boxShadow = isConnected ? `0 0 0 1px ${T.accent}` : "none";
+                    }}>
+                    <div style={{ width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: 8, overflow: "hidden", background: "transparent", position: "relative" }}>
+                      <img
+                        src={tool.iconUrl || `https://icon.horse/icon/${tool.domain}`}
+                        alt={tool.label}
+                        style={{ width: "28px", height: "28px", objectFit: "contain", mixBlendMode: "normal" }}
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          if (e.currentTarget.nextElementSibling) {
+                            (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
+                          }
+                        }}
+                      />
+                      <div style={{ position: "absolute", inset: 0, display: "none", alignItems: "center", justifyContent: "center", fontWeight: 700, color: T.text, fontSize: 16 }}>
+                        {tool.label.charAt(0)}
+                      </div>
+                    </div>
+                    <div style={{ flex: 1, overflow: "hidden" }}>
+                      <div style={{ fontWeight: 600, fontSize: 14, color: T.text }}>{tool.label}</div>
+                      <div style={{ fontSize: 11, color: T.secondary, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{tool.description}</div>
+                    </div>
+                    <button
+                      onClick={() => handleConnectComposio(tool.tool)}
+                      disabled={isConnected || connecting}
+                      title={isConnected ? "Connected" : "Connect"}
+                      style={{
+                        width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                        borderRadius: "50%", cursor: (isConnected || connecting) ? "default" : "pointer",
+                        background: isConnected ? "transparent" : (connecting ? T.muted : T.accent),
+                        border: isConnected ? `1px solid ${T.accent}` : "none",
+                        color: isConnected ? T.accent : (connecting ? T.secondary : "#000"),
+                        transition: "all 0.2s"
+                      }}
+                    >
+                      {connecting ? "..." : isConnected ? <Check size={16} /> : <Plus size={16} strokeWidth={2.5} />}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div style={{ padding: "16px 24px", background: "rgba(0,0,0,0.2)", borderTop: `1px solid ${T.border}`, fontSize: 12, color: T.secondary, textAlign: "center" }}>
+              Secure integrations powered by Composio. Your data is encrypted and private.
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

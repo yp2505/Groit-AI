@@ -5,13 +5,15 @@ import ToolCard from '@/components/ToolCard';
 import { useTools } from '@/context/ToolsContext';
 import { useAppUser } from '@/hooks/useAppUser';
 import { connectComposioToolkit, API_BASE, fetchWithRetry } from '@/lib/api';
+import { Target, FileText, ClipboardList, Gamepad2, TrendingUp, Github, MessageSquare, BarChart, AlertTriangle, ExternalLink, X, Loader2, CheckCircle2, Link as LinkIcon } from "lucide-react";
+
 
 const COMPOSIO_TOOLS = [
-  { tool: 'linear', label: 'Linear', description: 'Issue tracking & agile project management', icon: '🎯' },
-  { tool: 'notion', label: 'Notion', description: 'All-in-one workspace for notes & docs', icon: '📝' },
-  { tool: 'asana', label: 'Asana', description: 'Manage team projects and tasks', icon: '📋' },
-  { tool: 'discord', label: 'Discord', description: 'Community chat and notifications', icon: '🎮' },
-  { tool: 'hubspot', label: 'HubSpot', description: 'CRM and marketing automation', icon: '📈' },
+  { tool: 'linear', label: 'Linear', description: 'Issue tracking & agile project management', icon: <Target size={24} /> },
+  { tool: 'notion', label: 'Notion', description: 'All-in-one workspace for notes & docs', icon: <FileText size={24} /> },
+  { tool: 'asana', label: 'Asana', description: 'Manage team projects and tasks', icon: <ClipboardList size={24} /> },
+  { tool: 'discord', label: 'Discord', description: 'Community chat and notifications', icon: <Gamepad2 size={24} /> },
+  { tool: 'hubspot', label: 'HubSpot', description: 'CRM and marketing automation', icon: <TrendingUp size={24} /> },
 ];
 
 const TOOLS = [
@@ -19,7 +21,7 @@ const TOOLS = [
     tool: 'github',
     label: 'GitHub',
     description: 'Code repository & branch management',
-    icon: '🐙',
+    icon: <Github size={24} />,
     fields: [
       { key: 'username', label: 'GitHub Username', placeholder: 'your-username (optional — uses .env)', type: 'text' },
       { key: 'password', label: 'Personal Access Token', placeholder: 'ghp_xxxxxxxxxxxx (optional — uses .env)', type: 'password' },
@@ -29,7 +31,7 @@ const TOOLS = [
     tool: 'jira',
     label: 'Jira',
     description: 'Issue tracking & project management',
-    icon: '📋',
+    icon: <ClipboardList size={24} />,
     fields: [
       { key: 'domain', label: 'Jira Workspace URL', placeholder: 'team.atlassian.net', type: 'text', value: '' },
       { key: 'email', label: 'Atlassian Email', placeholder: 'you@yourteam.com', type: 'email', value: '' },
@@ -40,7 +42,7 @@ const TOOLS = [
     tool: 'slack',
     label: 'Slack',
     description: 'Team communication & notifications',
-    icon: '💬',
+    icon: <MessageSquare size={24} />,
     fields: [
       { key: 'token', label: 'Bot Token', placeholder: 'xoxb-...', type: 'password', value: '' },
     ],
@@ -49,7 +51,7 @@ const TOOLS = [
     tool: 'sheets',
     label: 'Google Sheets',
     description: 'Automated reporting & logging',
-    icon: '📊',
+    icon: <BarChart size={24} />,
     fields: [
       { key: 'sheet_id', label: 'Spreadsheet ID', placeholder: '1NZ0DljGTjF2RsEU...', type: 'text', value: '' },
     ],
@@ -215,7 +217,7 @@ const ConnectTools = () => {
               }}
             >
               <span style={{ fontSize: 13, color: '#e6c870' }}>
-                ⚠️ Popup was blocked. Click below to connect <strong>{fallbackUrl.slug}</strong>:
+                <AlertTriangle size={16} className="text-yellow-500 inline mr-2"/> Popup was blocked. Click below to connect <strong>{fallbackUrl.slug}</strong>:
               </span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <a
@@ -229,12 +231,12 @@ const ConnectTools = () => {
                     borderRadius: 8
                   }}
                 >
-                  🔗 Open OAuth Page ↗
+                  <span className="flex items-center gap-2"><ExternalLink size={14} /> Open OAuth Page</span>
                 </a>
                 <button
                   onClick={() => setFallbackUrl(null)}
                   style={{ background: 'none', border: 'none', color: '#7d8590', cursor: 'pointer', fontSize: 16 }}
-                >✕</button>
+                ><X size={18} /></button>
               </div>
             </motion.div>
           )}
@@ -333,7 +335,7 @@ const ConnectTools = () => {
                           }
                         }}
                       >
-                        {connecting ? "⏳ Connecting..." : isConnected ? "✅ Connected" : "🔗 Connect"}
+                        {connecting ? <span className="flex items-center gap-2"><Loader2 size={16} className="animate-spin" /> Connecting...</span> : isConnected ? <span className="flex items-center gap-2"><CheckCircle2 size={16} /> Connected</span> : <span className="flex items-center gap-2"><LinkIcon size={16} /> Connect</span>}
                       </button>
                     </motion.div>
                   );
@@ -369,7 +371,7 @@ const ConnectTools = () => {
             onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 0 20px rgba(46,160,67,0.3)"; }}
             onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
           >
-            {allConnected ? "✓ All Connected — Go to Dashboard" : "Go to Dashboard →"}
+            {allConnected ? <span className="flex items-center gap-2"><CheckCircle2 size={16} /> All Connected — Go to Dashboard</span> : "Go to Dashboard →"}
           </button>
         </div>
       </div>

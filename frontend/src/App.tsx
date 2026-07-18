@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -57,6 +57,10 @@ const App = () => (
                 <Route path="/" element={<Landing />} />
                 <Route path="/login/*" element={<LoginPage />} />
                 <Route path="/sign-up/*" element={<SignUpPage />} />
+                
+                {/* Redirect old clerk routes to new custom UI routes */}
+                <Route path="/sign-in/*" element={<Navigate to="/login" replace />} />
+                <Route path="/signup/*" element={<Navigate to="/sign-up" replace />} />
 
                 {/* Post-login: connect tools */}
                 <Route path="/connect-tools" element={

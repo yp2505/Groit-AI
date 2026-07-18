@@ -53,11 +53,11 @@ export default function LogsPage() {
                         break;
                       case 'success':
                         level = 'INFO';
-                        msg = `[${wf.workflow_id}] ✅ "${node.title}" completed successfully`;
+                        msg = `[${wf.workflow_id}] ✓ "${node.title}" completed successfully`;
                         break;
                       case 'failed':
                         level = 'ERROR';
-                        msg = `[${wf.workflow_id}] ❌ "${node.title}" FAILED`;
+                        msg = `[${wf.workflow_id}] ✗ "${node.title}" FAILED`;
                         break;
                       case 'skipped':
                         level = 'WARN';

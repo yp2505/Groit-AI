@@ -1,0 +1,83 @@
+AgenticChatUI.tsx:47 -> generic: "⚙️",
+AgenticChatUI.tsx:95 -> {TOOL_ICONS[tool] || "⚙️"} {server}
+AgenticChatUI.tsx:197 -> <span style={{ fontSize: 18 }}>{TOOL_ICONS[node.tool] || "⚙️"}</span>
+AgenticChatUI.tsx:224 -> 🔗 Open live link ↗
+AgenticChatUI.tsx:269 -> <button onClick={() => onEdit(msg)} style={{ background: "transparent", border: "none", color: isDark ? "#8a8f98" : "#656d76", cursor: "pointer", fontSize: 11, padding: 0 }}>✏️ Edit</button>
+AgenticChatUI.tsx:316 -> <span style={{ fontSize: 18 }}>🛡️</span>
+AgenticChatUI.tsx:331 -> <span style={{ fontSize: 16 }}>{TOOL_ICONS[n.tool] || "⚙️"}</span>
+AgenticChatUI.tsx:355 -> ✅ Approve & Execute
+AgenticChatUI.tsx:368 -> ❌ Reject
+AgenticChatUI.tsx:383 -> <span style={{ fontSize: 18 }}>🔌</span>
+AgenticChatUI.tsx:416 -> a.textContent = '🔗 Click here to connect ' + msg.connectToolkit;
+AgenticChatUI.tsx:443 -> 🔗 Connect {msg.connectToolkit} via Composio
+AgenticChatUI.tsx:469 -> ⚠️ Do you want to proceed with this action?
+AgenticChatUI.tsx:804 -> thinking: "🧠 Generating execution plan via LLM…",
+AgenticChatUI.tsx:907 -> content: "⚠️ Integration Error: " + errorMsg,
+AgenticChatUI.tsx:942 -> thinking: `✅ Approved — Dispatching ${dag.nodes?.length || 0} steps to live platforms…`,
+AgenticChatUI.tsx:983 -> ? `✅ All ${execData.total_nodes} step${execData.total_nodes !== 1 ? "s" : ""} executed on live platforms.`
+AgenticChatUI.tsx:984 -> : `⚠️ Workflow done — ${execData.succeeded}/${execData.total_nodes} succeeded${execData.failed > 0 ? `, ${execData.failed} failed` : ""}.`;
+AgenticChatUI.tsx:988 -> thinking: `Execution ${execData.execution_id} — ${execData.total_nodes} nodes (HITL Approved ✅)`,
+AgenticChatUI.tsx:996 -> content: "⚠️ Integration Error: " + (e.message || String(e)),
+AgenticChatUI.tsx:1010 -> thinking: "❌ Workflow rejected by user (HITL)",
+AgenticChatUI.tsx:1011 -> content: "🚫 Execution cancelled — no actions were performed.",
+AgenticChatUI.tsx:1053 -> setSlackResult({ ok: true, text: `✅ Message sent to ${out.channel || "#all-daiict"} (ts: ${out.ts || "ok"})` });
+AgenticChatUI.tsx:1056 -> setSlackResult({ ok: false, text: `❌ ${nodeResult?.error || data.detail || "Failed to send"}` });
+AgenticChatUI.tsx:1059 -> setSlackResult({ ok: false, text: `❌ ${e.message}` });
+AgenticChatUI.tsx:1181 -> ☰
+AgenticChatUI.tsx:1195 -> {isDark ? "☀️" : "🌙"}
+AgenticChatUI.tsx:1337 -> <span>🚪</span> Sign Out
+AgenticChatUI.tsx:1359 -> {TOOL_ICONS[n.tool] || "⚙️"} [{n.status?.toUpperCase()}] {n.tool || "generic"} → {n.action || n.title}
+AgenticChatUI.tsx:1391 -> Hello, {clerkUser?.firstName || "User"} 👋
+AgenticChatUI.tsx:1416 -> <span>✏️ Editing message — response will regenerate from this point</span>
+AgenticChatUI.tsx:1420 -> >✕ cancel</button>
+AgenticChatUI.tsx:1479 -> {isListening ? "🔴" : "🎤"}
+AgenticChatUI.tsx:1529 -> 🧩 Composio Toolkits
+AgenticChatUI.tsx:1536 -> >✕</button>
+AgenticChatUI.tsx:1548 -> ⚠️ Popup blocked. Click to connect <strong>{fallbackConnectUrl.slug}</strong>:
+AgenticChatUI.tsx:1561 -> 🔗 Open OAuth Page ↗
+AgenticChatUI.tsx:1566 -> >✕</button>
+AgenticChatUI.tsx:1627 -> {connecting ? "..." : isConnected ? "✓" : "+"}
+AgenticChatUI.tsx:1660 -> >✕</button>
+AgenticChatUI.tsx:1667 -> >☰</button>
+AgenticChatUI.tsx:1688 -> <button onClick={() => handleDisconnect(app.slug)} style={{ background: "transparent", border: "none", color: "#f85149", cursor: "pointer", marginLeft: "auto", fontSize: 14 }} title="Disconnect">✖</button>
+AgenticChatUI.tsx:1702 -> <p style={{ margin: 0 }}>Use the 🧩 Toolkit button next to the chat input to manage integrations.</p>
+ToolCard.tsx:126 -> >{visible ? "🙈" : "👁"}</button>
+ToolCard.tsx:151 -> ✓ {isDeveloper ? state.detail : 'Account connected successfully'}
+ToolCard.tsx:175 -> ⚠️ {isDeveloper ? state.detail : 'Could not sign in. Please check your credentials.'}
+ManagerDashboard.tsx:7 -> slack: '💬', github: '🐙', jira: '🔵', sheets: '📊', generic: '⚙️',
+ManagerDashboard.tsx:71 -> {TOOL_ICONS[tool] || '⚙️'} {server}
+ManagerDashboard.tsx:158 -> <span style={{ fontSize: 18 }}>{TOOL_ICONS[node.tool] || '⚙️'}</span>
+ManagerDashboard.tsx:174 -> }}>🔗 Open live link ↗</a>
+ManagerDashboard.tsx:237 -> <span style={{ fontSize: 18 }}>🛡️</span>
+ManagerDashboard.tsx:251 -> <span style={{ fontSize: 16 }}>{TOOL_ICONS[n.tool] || '⚙️'}</span>
+ManagerDashboard.tsx:266 -> }}>✅ Approve & Execute</button>
+ManagerDashboard.tsx:271 -> }}>❌ Reject</button>
+ManagerDashboard.tsx:295 -> <span style={{ fontSize: 24 }}>{allOk ? '✅' : '❌'}</span>
+ManagerLayout.tsx:79 -> thinking: '🧠 Generating execution plan via LLM…',
+ManagerLayout.tsx:134 -> ...m, thinking: '✅ Plan ready — executing workflow…',
+ManagerLayout.tsx:142 -> content: '⚠️ Integration Error: ' + (e.message || String(e)),
+ManagerLayout.tsx:186 -> ? `✅ All ${execData.total_nodes} step${execData.total_nodes !== 1 ? 's' : ''} executed on live platforms.`
+ManagerLayout.tsx:187 -> : `⚠️ Workflow done — ${execData.succeeded}/${execData.total_nodes} succeeded${execData.failed > 0 ? `, ${execData.failed} failed` : ''}.`;
+ManagerLayout.tsx:208 -> thinking: `✅ Approved — Dispatching ${dag.nodes?.length || 0} steps to live platforms…`,
+ManagerLayout.tsx:218 -> content: '⚠️ Integration Error: ' + (e.message || String(e)),
+ManagerLayout.tsx:232 -> thinking: '❌ Workflow rejected by user (HITL)',
+ManagerLayout.tsx:233 -> content: '🚫 Execution cancelled — no actions were performed.',
+ConnectTools.tsx:10 -> { tool: 'linear', label: 'Linear', description: 'Issue tracking & agile project management', icon: '🎯' },
+ConnectTools.tsx:11 -> { tool: 'notion', label: 'Notion', description: 'All-in-one workspace for notes & docs', icon: '📝' },
+ConnectTools.tsx:12 -> { tool: 'asana', label: 'Asana', description: 'Manage team projects and tasks', icon: '📋' },
+ConnectTools.tsx:13 -> { tool: 'discord', label: 'Discord', description: 'Community chat and notifications', icon: '🎮' },
+ConnectTools.tsx:14 -> { tool: 'hubspot', label: 'HubSpot', description: 'CRM and marketing automation', icon: '📈' },
+ConnectTools.tsx:22 -> icon: '🐙',
+ConnectTools.tsx:32 -> icon: '📋',
+ConnectTools.tsx:43 -> icon: '💬',
+ConnectTools.tsx:52 -> icon: '📊',
+ConnectTools.tsx:218 -> ⚠️ Popup was blocked. Click below to connect <strong>{fallbackUrl.slug}</strong>:
+ConnectTools.tsx:232 -> 🔗 Open OAuth Page ↗
+ConnectTools.tsx:237 -> >✕</button>
+ConnectTools.tsx:336 -> {connecting ? "⏳ Connecting..." : isConnected ? "✅ Connected" : "🔗 Connect"}
+ConnectTools.tsx:372 -> {allConnected ? "✓ All Connected — Go to Dashboard" : "Go to Dashboard →"}
+Logs.tsx:56 -> msg = `[${wf.workflow_id}] ✅ "${node.title}" completed successfully`;
+Logs.tsx:60 -> msg = `[${wf.workflow_id}] ❌ "${node.title}" FAILED`;
+Logs.tsx:68 -> msg = `[${wf.workflow_id}] 🔒 "${node.title}" waiting for HITL approval`;
+ManagerDashboard.tsx:82 -> message: `✅ Workflow triggered by gateway:\n"${text.slice(0, 80)}${text.length > 80 ? '...' : ''}"`,
+ManagerDashboard.tsx:84 -> setEditMsg(`✅ Workflow triggered by gateway:\n"${text.slice(0, 80)}${text.length > 80 ? '...' : ''}"`);

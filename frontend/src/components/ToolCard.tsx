@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTools } from '@/context/ToolsContext';
 import { useAppUser } from '@/hooks/useAppUser';
+import { Eye, EyeOff, CheckCircle2, AlertTriangle } from "lucide-react";
+
 
 function ToolCard({ tool, icon, label, description, fields, isOAuth = false, authUrl = '' }) {
   const { tools, connect, reset } = useTools();
@@ -123,7 +125,7 @@ function ToolCard({ tool, icon, label, description, fields, isOAuth = false, aut
                         position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)",
                         background: "none", border: "none", color: "#7d8590", cursor: "pointer", fontSize: 12
                       }}
-                    >{visible ? "🙈" : "👁"}</button>
+                    >{visible ? "<EyeOff size={16} />" : "<Eye size={16} />"}</button>
                   )}
                 </div>
               </div>
@@ -148,7 +150,7 @@ function ToolCard({ tool, icon, label, description, fields, isOAuth = false, aut
       ) : (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12 }}>
           <span style={{ color: "#4ade80", fontSize: 13, fontWeight: 500, display: "flex", alignItems: "center", gap: 6 }}>
-            ✓ {isDeveloper ? state.detail : 'Account connected successfully'}
+            <CheckCircle2 size={16} className="text-green-500 inline mr-2" /> {isDeveloper ? state.detail : 'Account connected successfully'}
           </span>
           <button
             onClick={handleReset}
@@ -172,7 +174,7 @@ function ToolCard({ tool, icon, label, description, fields, isOAuth = false, aut
               color: "#f85149", fontSize: 12
             }}
           >
-            ⚠️ {isDeveloper ? state.detail : 'Could not sign in. Please check your credentials.'}
+            <AlertTriangle size={16} className="text-yellow-500 inline mr-2" /> {isDeveloper ? state.detail : 'Could not sign in. Please check your credentials.'}
           </motion.div>
         )}
       </AnimatePresence>

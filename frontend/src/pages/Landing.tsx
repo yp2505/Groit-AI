@@ -4,13 +4,31 @@ import { motion } from 'framer-motion';
 const Landing = () => {
   const navigate = useNavigate();
 
+  const theme = {
+    bg: '#0D1115',
+    accent: '#4ADE80',
+    cardBg: '#13181D',
+    cardBorder: '#1F2933',
+    textMain: '#FFFFFF',
+    textMuted: '#8B949E'
+  };
+
   return (
     <div style={{
-      height: "100vh", background: "#0d1117", color: "#e6edf3",
-      fontFamily: "'Segoe UI', system-ui, sans-serif",
-      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      minHeight: "100vh", background: theme.bg, color: theme.textMain,
+      fontFamily: "'Inter', system-ui, sans-serif",
       position: "relative", overflow: "hidden"
     }}>
+      {/* Grid Background */}
+      <div style={{
+        position: "absolute", inset: 0,
+        backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)`,
+        backgroundSize: '40px 40px',
+        WebkitMaskImage: 'radial-gradient(ellipse 80% 80% at 50% 50%, #000 30%, transparent 100%)',
+        maskImage: 'radial-gradient(ellipse 80% 80% at 50% 50%, #000 30%, transparent 100%)',
+        pointerEvents: "none", zIndex: 0
+      }} />
+
       {/* Subtle radial glow */}
       <div style={{
         position: "absolute", top: "20%", left: "30%", width: 500, height: 500,
@@ -23,132 +41,147 @@ const Landing = () => {
         borderRadius: "50%", pointerEvents: "none"
       }} />
 
-      <motion.div
-        style={{ position: "relative", zIndex: 10, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", padding: "0 24px", maxWidth: 720 }}
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-      >
+      {/* Navigation */}
+      <nav style={{
+        position: "relative", zIndex: 20, display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "24px 48px", width: "100%", maxWidth: 1400, margin: "0 auto"
+      }}>
         {/* Logo */}
-        <motion.div
-          style={{
-            width: 64, height: 64, borderRadius: 16,
-            background: "#0d3320", border: "1px solid #2ea043",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            marginBottom: 28, fontSize: 28, fontWeight: 700, color: "#4ade80",
-            boxShadow: "0 0 40px rgba(46,160,67,0.15)"
-          }}
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.1, duration: 0.5 }}
-        >G</motion.div>
-
-        {/* Badge */}
-        <motion.div
-          style={{
-            display: "inline-flex", alignItems: "center", gap: 8,
-            padding: "4px 14px", borderRadius: 99,
-            border: "1px solid #21262d", background: "#161b22",
-            fontSize: 12, fontWeight: 600, color: "#4ade80", marginBottom: 24
-          }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          <span style={{ position: "relative", width: 8, height: 8 }}>
-            <span style={{
-              position: "absolute", width: "100%", height: "100%", borderRadius: "50%",
-              background: "#4ade80", opacity: 0.5,
-              animation: "ping 1.5s cubic-bezier(0,0,0.2,1) infinite"
-            }} />
-            <span style={{ position: "relative", display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#2ea043" }} />
-          </span>
-          Gateway Active · Groit AI Orchestration
-        </motion.div>
-        <style>{`@keyframes ping { 75%,100%{transform:scale(2);opacity:0} }`}</style>
-
-        {/* Title */}
-        <motion.h1
-          style={{ fontSize: 52, fontWeight: 700, margin: "0 0 12px", lineHeight: 1.1, color: "#e6edf3", letterSpacing: "-1px" }}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-        >
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, fontSize: 18 }}>
+          <div style={{ display: "flex", gap: 4 }}>
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: theme.accent }} />
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#2E3640' }} />
+          </div>
           Groit AI
-        </motion.h1>
+        </div>
 
-        {/* Subtitle */}
-        <motion.p
-          style={{ color: "#7d8590", fontSize: 16, lineHeight: 1.7, maxWidth: 520, margin: "0 0 40px" }}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-        >
-          The next-generation AI orchestration engine. Run parallel, multi-agent workflows across Jira, GitHub & Slack with intelligent DAG execution and real-time observability.
-        </motion.p>
-
-        {/* CTAs */}
-        <motion.div
-          style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.45 }}
-        >
-          <button
-            onClick={() => navigate('/login')}
-            style={{
-              display: "flex", alignItems: "center", gap: 8,
-              padding: "14px 28px", borderRadius: 12, border: "none",
-              background: "#2ea043", color: "#fff",
-              fontSize: 15, fontWeight: 600, cursor: "pointer",
-              transition: "all 0.2s", boxShadow: "0 0 20px rgba(46,160,67,0.25)"
-            }}
-            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 0 30px rgba(46,160,67,0.4)"; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 0 20px rgba(46,160,67,0.25)"; }}
-          >
-            ▶ Start Workflow →
-          </button>
-
-          <button
-            onClick={() => navigate('/login')}
-            style={{
-              display: "flex", alignItems: "center", gap: 8,
-              padding: "14px 28px", borderRadius: 12,
-              border: "1px solid #30363d", background: "#161b22",
-              color: "#e6edf3", fontSize: 15, fontWeight: 600, cursor: "pointer",
-              transition: "all 0.2s"
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = "#2ea043"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = "#30363d"; e.currentTarget.style.transform = "translateY(0)"; }}
-          >
-            ⊞ Sign In
-          </button>
-        </motion.div>
-
-        {/* Stats */}
-        <motion.div
+        {/* Top Right Action */}
+        <button
+          onClick={() => navigate('/login')}
           style={{
-            display: "flex", gap: 48, marginTop: 56, paddingTop: 32,
-            borderTop: "1px solid #21262d", width: "100%", justifyContent: "center"
+            padding: "8px 20px", borderRadius: 30, background: theme.accent, color: "#000",
+            fontWeight: 600, fontSize: 14, border: "none", cursor: "pointer",
+            display: "flex", alignItems: "center", gap: 4, transition: "transform 0.2s"
           }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.55 }}
+          onMouseEnter={e => e.currentTarget.style.transform = "translateY(-1px)"}
+          onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
         >
-          {[
-            { label: "DAG Nodes", value: "50+" },
-            { label: "Tool Integrations", value: "4" },
-            { label: "Execution Mode", value: "Parallel" },
-          ].map(stat => (
-            <div key={stat.label} style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 24, fontWeight: 700, color: "#4ade80" }}>{stat.value}</div>
-              <div style={{ fontSize: 11, color: "#7d8590", marginTop: 4 }}>{stat.label}</div>
-            </div>
-          ))}
+          Sign In ↗
+        </button>
+      </nav>
+
+      {/* Main Content */}
+      <main style={{ 
+        display: "flex", flexDirection: "column", alignItems: "center", 
+        paddingTop: "80px", position: "relative", zIndex: 10 
+      }}>
+        
+        {/* Floating Cards (Background) */}
+        <motion.div
+          initial={{ opacity: 0, x: -50, rotate: -15 }}
+          animate={{ opacity: 1, x: 0, rotate: -10 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          style={{
+            position: "absolute", left: "8%", top: "120px",
+            background: theme.cardBg, border: `1px solid ${theme.cardBorder}`,
+            borderRadius: 16, padding: 24, width: 220,
+            boxShadow: "0 20px 40px rgba(0,0,0,0.4)"
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, fontWeight: 700, color: theme.textMuted, letterSpacing: 1, marginBottom: 12 }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: theme.accent }} />
+            ACTIVE AGENTS
+          </div>
+          <div style={{ fontSize: 32, fontWeight: 700, marginBottom: 16 }}>
+            12<span style={{ fontSize: 16, color: theme.textMuted }}>/15</span>
+          </div>
+          <svg width="100%" height="30" viewBox="0 0 100 30" preserveAspectRatio="none">
+            <path d="M0 25 Q 25 5, 50 15 T 100 10" fill="none" stroke={theme.accent} strokeWidth="2" />
+          </svg>
+          <div style={{ fontSize: 12, color: theme.accent, marginTop: 12, fontWeight: 600 }}>+3 in queue</div>
         </motion.div>
-      </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, x: 50, rotate: 15 }}
+          animate={{ opacity: 1, x: 0, rotate: 10 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          style={{
+            position: "absolute", right: "8%", top: "140px",
+            background: theme.cardBg, border: `1px solid ${theme.cardBorder}`,
+            borderRadius: 16, padding: 24, width: 220,
+            boxShadow: "0 20px 40px rgba(0,0,0,0.4)"
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, fontWeight: 700, color: theme.textMuted, letterSpacing: 1, marginBottom: 12 }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: theme.accent }} />
+            TASKS COMPLETED
+          </div>
+          <div style={{ fontSize: 32, fontWeight: 700, marginBottom: 16 }}>
+            24.8<span style={{ fontSize: 16, color: theme.textMuted }}>k</span>
+          </div>
+          <svg width="100%" height="30" viewBox="0 0 100 30" preserveAspectRatio="none">
+            <path d="M0 20 Q 25 25, 50 15 T 100 5" fill="none" stroke={theme.accent} strokeWidth="2" />
+          </svg>
+          <div style={{ fontSize: 12, color: theme.accent, marginTop: 12, fontWeight: 600 }}>+8.5%</div>
+        </motion.div>
+
+        {/* Hero Copy */}
+        <motion.div
+          style={{ maxWidth: 840, textAlign: "center", position: "relative", zIndex: 20 }}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <h1 style={{ 
+            fontSize: 64, fontWeight: 700, lineHeight: 1.1, 
+            letterSpacing: "-1.5px", marginBottom: 32, color: theme.textMain 
+          }}>
+            Experience seamless<br />
+            orchestration with smart<br />
+            agents<br />
+            made for <span style={{ 
+              background: theme.accent, color: "#000", 
+              padding: "4px 20px", borderRadius: 999, display: "inline-block",
+              transform: "translateY(4px)"
+            }}>modern teams</span>
+          </h1>
+
+          <p style={{ fontSize: 18, color: theme.textMuted, lineHeight: 1.6, maxWidth: 640, margin: "0 auto 48px" }}>
+            The next-generation AI orchestration engine. Run parallel, multi-agent workflows across Jira, GitHub & Slack with intelligent DAG execution and real-time observability.
+          </p>
+
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16 }}>
+            <button
+              onClick={() => navigate('/login')}
+              style={{
+                padding: "16px 32px", borderRadius: 30, background: theme.accent, color: "#000",
+                fontSize: 16, fontWeight: 600, border: "none", cursor: "pointer",
+                transition: "transform 0.2s"
+              }}
+              onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
+            >
+              Get Started →
+            </button>
+            <button
+              onClick={() => navigate('/dashboard')}
+              style={{
+                padding: "16px 32px", borderRadius: 30, background: "transparent", color: theme.textMain,
+                fontSize: 16, fontWeight: 600, border: `1px solid #2E3640`, cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = "#1F2933"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.transform = "translateY(0)"; }}
+            >
+              See How It Works
+            </button>
+          </div>
+        </motion.div>
+
+      </main>
     </div>
   );
 };
 
 export default Landing;
+

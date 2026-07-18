@@ -6,6 +6,8 @@ import ManagerDashboardPanel from './ManagerDashboard';
 import ManagerInputBar from './ManagerInputBar';
 import ManagerRightPanel from './ManagerRightPanel';
 import { useTools } from '@/context/ToolsContext';
+import { CheckCircle2, AlertTriangle, XCircle, BrainCircuit, Ban } from "lucide-react";
+
 
 // ── Suggested prompts for the welcome screen ─────────────────────────
 const SUGGESTED_PROMPTS = [
@@ -76,7 +78,7 @@ export default function ManagerLayout() {
     const thinkingId = Date.now() + 1;
     setMessages(prev => [...prev, {
       id: thinkingId, role: 'assistant',
-      thinking: '🧠 Generating execution plan via LLM…',
+      thinking: '<span className=\'flex items-center gap-2\'><BrainCircuit size={16} className=\'animate-pulse text-purple-400\' /> Generating execution plan via LLM…</span>',
       content: '', isThinking: true,
     }]);
 
@@ -131,7 +133,7 @@ export default function ManagerLayout() {
 
       // ── Execute directly ────────────────────────────────────────────
       setMessages(prev => prev.map((m: any) => m.id === thinkingId ? {
-        ...m, thinking: '✅ Plan ready — executing workflow…',
+        ...m, thinking: '<span className=\'flex items-center gap-2\'><CheckCircle2 size={16} className=\'text-green-400\' /> Plan ready — executing workflow…</span>',
       } : m));
 
       await executeDag(dag, thinkingId, chatHistory);
@@ -139,7 +141,7 @@ export default function ManagerLayout() {
       console.error('Workflow Engine Error:', e);
       setMessages(prev => prev.map((m: any) => m.id === thinkingId ? {
         id: thinkingId, role: 'assistant',
-        content: '⚠️ Integration Error: ' + (e.message || String(e)),
+        content: '<span className=\'flex items-center gap-2 text-red-400\'><AlertTriangle size={16} /> Integration Error: </span>' + (e.message || String(e)),
         isThinking: false,
       } : m));
     } finally {
@@ -183,8 +185,8 @@ export default function ManagerLayout() {
 
     const allOk = execData.failed === 0 && execData.succeeded > 0;
     const summary = allOk
-      ? `✅ All ${execData.total_nodes} step${execData.total_nodes !== 1 ? 's' : ''} executed on live platforms.`
-      : `⚠️ Workflow done — ${execData.succeeded}/${execData.total_nodes} succeeded${execData.failed > 0 ? `, ${execData.failed} failed` : ''}.`;
+      ? `<span className=\'flex items-center gap-2\'><CheckCircle2 size={16} className=\'text-green-400\' /> All ${execData.total_nodes} step${execData.total_nodes !== 1 ? 's' : ''} executed on live platforms.`
+      : `<span className=\'flex items-center gap-2\'><AlertTriangle size={16} className=\'text-yellow-400\' /> Workflow done — ${execData.succeeded}/${execData.total_nodes} succeeded${execData.failed > 0 ? `, ${execData.failed} failed` : ''}.`;
 
     setMessages(prev => prev.map((m: any) => m.id === thinkingId ? {
       id: thinkingId, role: 'assistant',
@@ -205,7 +207,7 @@ export default function ManagerLayout() {
 
     setMessages(prev => prev.map((m: any) => m.id === thinkingId ? {
       ...m,
-      thinking: `✅ Approved — Dispatching ${dag.nodes?.length || 0} steps to live platforms…`,
+      thinking: `<span className=\'flex items-center gap-2\'><CheckCircle2 size={16} className=\'text-green-400\' /> Approved — Dispatching ${dag.nodes?.length || 0} steps to live platforms…`,
       content: '', isThinking: true,
       hitlPending: false, hitlNodes: undefined,
     } : m));
@@ -215,7 +217,7 @@ export default function ManagerLayout() {
     } catch (e: any) {
       setMessages(prev => prev.map((m: any) => m.id === thinkingId ? {
         id: thinkingId, role: 'assistant',
-        content: '⚠️ Integration Error: ' + (e.message || String(e)),
+        content: '<span className=\'flex items-center gap-2 text-red-400\'><AlertTriangle size={16} /> Integration Error: </span>' + (e.message || String(e)),
         isThinking: false,
       } : m));
     } finally {
@@ -229,8 +231,8 @@ export default function ManagerLayout() {
     setPendingApproval(null);
     setMessages(prev => prev.map((m: any) => m.id === thinkingId ? {
       ...m,
-      thinking: '❌ Workflow rejected by user (HITL)',
-      content: '🚫 Execution cancelled — no actions were performed.',
+      thinking: '<span className=\'flex items-center gap-2\'><XCircle size={16} className=\'text-red-400\' /> Workflow rejected by user (HITL)</span>',
+      content: '<span className=\'flex items-center gap-2\'><Ban size={16} className=\'text-red-400\' /> Execution cancelled — no actions were performed.</span>',
       isThinking: false, hitlPending: false, hitlNodes: undefined,
     } : m));
   };

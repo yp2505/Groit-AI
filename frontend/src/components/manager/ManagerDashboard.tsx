@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { RefObject } from 'react';
 import { Box, Typography } from '@mui/material';
-import { CheckCircle2 as CheckCircleIcon } from 'lucide-react';
+import { CheckCircle2 as CheckCircleIcon, MessageSquare, Github, Kanban, BarChart, Settings, ExternalLink, ShieldAlert, XCircle } from 'lucide-react';
 
 // ── Tool visual helpers (same as developer side) ─────────────────────
 const TOOL_ICONS: Record<string, string> = {
-  slack: '💬', github: '🐙', jira: '🔵', sheets: '📊', generic: '⚙️',
+  slack: <MessageSquare size={16} />, github: <Github size={16} />, jira: <Kanban size={16} />, sheets: <BarChart size={16} />, generic: <Settings size={16} />,
 };
 const TOOL_COLORS: Record<string, { bg: string; border: string; text: string }> = {
   slack:   { bg: '#f5f3ff', border: '#7c3aed', text: '#6d28d9' },
@@ -68,7 +69,7 @@ function DAGNode({ label, sublabel, server, left, top, status, tool }: any) {
       transition: 'box-shadow 0.4s',
     }}>
       <div style={{ color: '#6b7280', fontSize: 10, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-        {TOOL_ICONS[tool] || '⚙️'} {server}
+        {TOOL_ICONS[tool] || <Settings size={16} />} {server}
       </div>
       <div style={{ fontFamily: 'monospace', color: tc.text, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {label}
@@ -155,7 +156,7 @@ function WorkflowVisualization({ dagData, nodeDetails }: { dagData: any; nodeDet
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: 18 }}>{TOOL_ICONS[node.tool] || '⚙️'}</span>
+                      <span style={{ fontSize: 18 }}>{TOOL_ICONS[node.tool] || <Settings size={16} />}</span>
                       <div>
                         <span style={{ fontSize: 12, color: tc.text, fontWeight: 600 }}>{node.tool?.toUpperCase()}</span>
                         <span style={{ fontSize: 12, color: '#6b7280', marginLeft: 6 }}>· {node.action}</span>
@@ -171,7 +172,7 @@ function WorkflowVisualization({ dagData, nodeDetails }: { dagData: any; nodeDet
                         fontSize: 12, color: '#3b82f6', textDecoration: 'none',
                         border: '1px solid #3b82f622', borderRadius: 6,
                         padding: '3px 10px', marginTop: 4, background: '#eff6ff',
-                      }}>🔗 Open live link ↗</a>
+                      }}><span className="flex items-center gap-1"><ExternalLink size={14} /> Open live link</span></a>
                   ))}
                   {isFailed && node.error && (
                     <div style={{ fontSize: 12, color: '#ef4444', marginTop: 4 }}>
@@ -234,7 +235,7 @@ function ChatMessage({ msg, onApprove, onReject }: { msg: any; onApprove?: () =>
             boxShadow: '0 2px 8px rgba(245,158,11,0.15)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-              <span style={{ fontSize: 18 }}>🛡️</span>
+              <span style={{ fontSize: 18 }}><ShieldAlert size={18} /></span>
               <span style={{ fontSize: 14, fontWeight: 700, color: '#b45309', letterSpacing: 0.3 }}>
                 HUMAN-IN-THE-LOOP APPROVAL REQUIRED
               </span>
@@ -248,7 +249,7 @@ function ChatMessage({ msg, onApprove, onReject }: { msg: any; onApprove?: () =>
                 background: '#fff7ed', border: '1px solid #fed7aa',
                 borderRadius: 8, padding: '8px 12px', marginBottom: 6,
               }}>
-                <span style={{ fontSize: 16 }}>{TOOL_ICONS[n.tool] || '⚙️'}</span>
+                <span style={{ fontSize: 16 }}>{TOOL_ICONS[n.tool] || <Settings size={16} />}</span>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 600, color: '#1f2328', fontFamily: 'monospace' }}>{n.tool}.{n.action}</div>
                   <div style={{ fontSize: 11, color: '#6b7280' }}>
@@ -263,12 +264,12 @@ function ChatMessage({ msg, onApprove, onReject }: { msg: any; onApprove?: () =>
                 background: 'linear-gradient(135deg, #22c55e, #16a34a)',
                 color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer',
                 boxShadow: '0 0 12px rgba(34,197,94,0.3)',
-              }}>✅ Approve & Execute</button>
+              }}><span className="flex items-center gap-2"><CheckCircleIcon size={16} /> Approve & Execute</span></button>
               <button onClick={onReject} style={{
                 flex: 1, padding: '10px 16px', border: '1px solid #dc2626',
                 borderRadius: 8, background: '#fef2f2',
                 color: '#dc2626', fontWeight: 700, fontSize: 13, cursor: 'pointer',
-              }}>❌ Reject</button>
+              }}><span className="flex items-center gap-2"><XCircle size={16} /> Reject</span></button>
             </div>
           </div>
         )}
@@ -292,7 +293,7 @@ function ChatMessage({ msg, onApprove, onReject }: { msg: any; onApprove?: () =>
                   boxShadow: `0 2px 12px ${allOk ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)'}`,
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                    <span style={{ fontSize: 24 }}>{allOk ? '✅' : '❌'}</span>
+                    <span style={{ fontSize: 24 }}>{allOk ? <CheckCircleIcon size={24} /> : <XCircle size={24} />}</span>
                     <div>
                       <div style={{ fontSize: 15, fontWeight: 700, color: allOk ? '#166534' : '#991b1b' }}>
                         {allOk ? 'Task Completed Successfully' : 'Task Failed'}

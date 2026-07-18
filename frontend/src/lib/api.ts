@@ -193,3 +193,22 @@ export async function connectComposioToolkit(
     };
   }
 }
+
+export async function disconnectComposioToolkit(
+  toolkit: string,
+  userId: string,
+): Promise<{ ok: boolean; detail?: string }> {
+  try {
+    const res = await fetchWithRetry(`${API_BASE}/integrations/composio/disconnect/${toolkit}`, {
+      method: 'DELETE',
+      headers: { 'X-User-Id': userId },
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      return { ok: false, detail: data.detail || `Server error ${res.status}` };
+    }
+    return data;
+  } catch (err) {
+    return { ok: false, detail: 'Network error or backend unreachable.' };
+  }
+}
