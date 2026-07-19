@@ -241,7 +241,7 @@ const Landing = () => {
             justifyContent: 'center',
             gap: isMobile ? 12 : 16,
             flexDirection: isMobile ? 'column' : 'row',
-            paddingBottom: isMobile ? 40 : 0,
+            paddingBottom: isMobile ? 24 : 0,
           }}>
             <button
               onClick={() => navigate('/login')}
@@ -275,6 +275,52 @@ const Landing = () => {
             </button>
           </div>
         </motion.div>
+
+        {/* Mobile Stats Cards */}
+        {isMobile && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ opacity: { duration: 0.6, delay: 0.2 }, y: { duration: 0.6, delay: 0.2 } }}
+            style={{ display: 'flex', gap: 12, marginTop: 16, width: '100%', justifyContent: 'center', paddingBottom: 40, position: 'relative', zIndex: 20 }}
+          >
+            <div style={{
+              background: theme.cardBg, border: `1px solid ${theme.cardBorder}`,
+              borderRadius: 12, padding: 16, flex: 1, maxWidth: 160,
+              boxShadow: '0 10px 20px rgba(0,0,0,0.3)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 9, fontWeight: 700, color: theme.textMuted, letterSpacing: 0.5, marginBottom: 8 }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: theme.accent }} />
+                ACTIVE AGENTS
+              </div>
+              <div style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>
+                12<span style={{ fontSize: 12, color: theme.textMuted }}>/15</span>
+              </div>
+              <svg width="100%" height="20" viewBox="0 0 100 20" preserveAspectRatio="none">
+                <path d="M0 15 Q 25 5, 50 10 T 100 5" fill="none" stroke={theme.accent} strokeWidth="2" />
+              </svg>
+              <div style={{ fontSize: 10, color: theme.accent, marginTop: 8, fontWeight: 600 }}>+3 in queue</div>
+            </div>
+
+            <div style={{
+              background: theme.cardBg, border: `1px solid ${theme.cardBorder}`,
+              borderRadius: 12, padding: 16, flex: 1, maxWidth: 160,
+              boxShadow: '0 10px 20px rgba(0,0,0,0.3)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 9, fontWeight: 700, color: theme.textMuted, letterSpacing: 0.5, marginBottom: 8 }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: theme.accent }} />
+                COMPLETED
+              </div>
+              <div style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>
+                24.8<span style={{ fontSize: 12, color: theme.textMuted }}>k</span>
+              </div>
+              <svg width="100%" height="20" viewBox="0 0 100 20" preserveAspectRatio="none">
+                <path d="M0 15 Q 25 20, 50 10 T 100 5" fill="none" stroke={theme.accent} strokeWidth="2" />
+              </svg>
+              <div style={{ fontSize: 10, color: theme.accent, marginTop: 8, fontWeight: 600 }}>+8.5%</div>
+            </div>
+          </motion.div>
+        )}
       </main>
     </div>
   );
