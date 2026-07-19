@@ -1,0 +1,17 @@
+# nixpacks.toml — Unified build for Groit AI on Railway
+# Builds frontend (React/Vite) first, then installs Python backend deps.
+# The FastAPI backend serves the built frontend from ../frontend/dist
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "python311", "python311Packages.pip"]
+
+[phases.build]
+cmds = [
+  # 1. Build the React frontend
+  "cd frontend && npm install && npm run build && cd ..",
+  # 2. Install Python backend deps
+  "cd backend && pip install -r requirements.txt && cd .."
+]
+
+[start]
+cmd = "cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT"

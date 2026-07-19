@@ -3,6 +3,7 @@ uvicorn
 pydantic
 pydantic-settings
 requests
+httpx
 composio
 python-dotenv
 groq
@@ -10,3 +11,4 @@ gspread>=6.1.0
 google-auth>=2.20.0
 types-PyYAML>=6.0.12
 gradio_client
+slack_sdk
