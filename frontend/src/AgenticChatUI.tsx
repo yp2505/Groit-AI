@@ -1089,6 +1089,21 @@ export default function App() {
         throw new Error(data.error || "Failed to execute workflow");
       }
 
+      // ── Conversational reply (non-workflow messages like "hi") ──────────────
+      const chatReply = data.execution?.chat_reply;
+      if (chatReply) {
+        setMessages(prev => prev.map((m: any) => m.id === thinkingId ? {
+          id: thinkingId,
+          role: "assistant",
+          content: chatReply,
+          dagData: null,
+          nodeDetails: null,
+          audit: undefined,
+          isThinking: false,
+        } : m));
+        return;
+      }
+
       const dagNodes = data.dag?.nodes || [];
       const execution = data.execution?.results || {};
 
