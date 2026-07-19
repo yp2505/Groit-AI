@@ -1717,22 +1717,25 @@ export default function App() {
               {!chatStarted ? (
                 <div style={{
                   display: "flex", flexDirection: "column", alignItems: "center",
-                  justifyContent: "center", height: "100%", padding: "0 24px",
+                  justifyContent: "center", height: "100%",
+                  padding: isMobile ? "0 16px" : "0 24px",
                   position: "relative", zIndex: 10
                 }}>
                   <div style={{
-                    fontSize: 32, fontWeight: 700, color: T.text, marginBottom: 16,
-                    textAlign: "center", letterSpacing: "-0.5px"
+                    fontSize: isMobile ? 22 : 32, fontWeight: 700, color: T.text, marginBottom: 12,
+                    textAlign: "center", letterSpacing: "-0.5px",
+                    lineHeight: 1.2,
                   }}>
-                    Hii {clerkUser?.firstName || "User"} , <span style={{ color: T.accent }}>Groit AI</span> Here
+                    Hii {clerkUser?.firstName || "User"} ,{" "}
+                    <span style={{ color: T.accent }}>Groit AI</span> Here
                   </div>
-                  <div style={{ color: T.secondary, fontSize: 16, textAlign: "center", maxWidth: 600 }}>
+                  <div style={{ color: T.secondary, fontSize: isMobile ? 14 : 16, textAlign: "center", maxWidth: 600 }}>
                     What workflow would you like to run today?
                   </div>
                 </div>
               ) : (
-                <div style={{ maxWidth: 960, margin: "0 auto", width: "100%", padding: "24px", display: "flex", flexDirection: "column", gap: 32 }}>
-                  <div style={{ fontSize: 12, color: T.secondary, fontWeight: 600, letterSpacing: 0.5, marginBottom: -16 }}>Today</div>
+                <div style={{ maxWidth: 960, margin: "0 auto", width: "100%", padding: isMobile ? "16px" : "24px", display: "flex", flexDirection: "column", gap: isMobile ? 20 : 32 }}>
+                  <div style={{ fontSize: 12, color: T.secondary, fontWeight: 600, letterSpacing: 0.5, marginBottom: -8 }}>Today</div>
                   {messages.map((msg: any) => (
                     <ChatMessage key={msg.id} msg={msg} onEdit={handleEdit} onApprove={handleHITLApprove} onReject={handleHITLReject} />
                   ))}
@@ -1742,7 +1745,7 @@ export default function App() {
             </div>
 
             {/* ── FLOATING INPUT BOX ── */}
-            <div style={{ padding: "0 24px 32px", zIndex: 20 }}>
+            <div style={{ padding: isMobile ? "0 10px 20px" : "0 24px 32px", zIndex: 20 }}>
               <div style={{ maxWidth: 780, margin: "0 auto" }}>
                 {editingMsg && (
                   <div style={{ fontSize: 11, color: "#f0883e", marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
