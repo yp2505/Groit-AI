@@ -3,10 +3,9 @@ import { getMockWorkflowStatus, resetSimulation } from './mockData';
 
 // ─── Configuration ───────────────────────────────────────────────────────────
 // All requests go through Vite's dev proxy (/api → localhost:8000)
-// This avoids all browser-level "Failed to fetch" and CORS issues.
-
-export const API_BASE = '/api';
-export const WS_BASE = `ws://${window.location.host}`;
+// Use the environment variable if provided (for production when backend is separate), otherwise fallback to proxy (/api)
+export const API_BASE = import.meta.env.VITE_API_URL || '/api';
+export const WS_BASE = import.meta.env.VITE_WS_URL || `ws://${window.location.host}`;
 const USE_MOCK = false;
 
 // ─── Retry Helper ─────────────────────────────────────────────────────────────
