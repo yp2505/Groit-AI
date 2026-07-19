@@ -1,11 +1,13 @@
 from fastapi import APIRouter, HTTPException, Request
 import logging
 import re
+from typing import cast, List, Any
 from schemas.dag_schema import WorkflowRequest, WorkflowDAG  # type: ignore
 from services.models.llm_resolver import generate_dag  # type: ignore
 from services.engine.dag_executor import DAGExecutor  # type: ignore
 from config.settings import settings  # type: ignore
 from groq import Groq
+from groq.types.chat import ChatCompletionMessageParam
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +62,7 @@ def chat_with_groq(user_input: str, chat_history: list) -> str:
             model="llama-3.3-70b-versatile",
             temperature=0.7,
             max_tokens=512,
-            messages=messages
+            messages=cast(List[ChatCompletionMessageParam], messages)
         )
         return response.choices[0].message.content or "Hello! How can I help you today?"
     except Exception as e:
