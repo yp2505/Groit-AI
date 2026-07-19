@@ -86,7 +86,7 @@ const PricingPage = () => {
       }} />
 
       {/* Navigation */}
-      <nav style={{
+      <nav className="pricing-nav" style={{
         position: "relative", zIndex: 20, display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "24px 48px", width: "100%", maxWidth: 1400, margin: "0 auto"
       }}>
@@ -135,7 +135,7 @@ const PricingPage = () => {
           </p>
         </motion.div>
 
-        <div style={{ 
+        <div className="pricing-card-grid" style={{ 
           display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 24, 
           maxWidth: 1200, padding: "0 24px", width: "100%" 
         }}>

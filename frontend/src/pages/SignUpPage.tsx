@@ -91,7 +91,7 @@ const SignUpPage = () => {
   };
 
   return (
-    <div style={{
+    <div className="auth-outer" style={{
       minHeight: "100vh", padding: "40px 20px", background: theme.bg, color: theme.textMain,
       fontFamily: "'Inter', system-ui, sans-serif",
       display: "flex", alignItems: "center", justifyContent: "center",
@@ -134,7 +134,7 @@ const SignUpPage = () => {
         </div>
 
         {/* Custom Auth Card */}
-        <div style={{
+        <div className="auth-card" style={{
           background: theme.cardBg, borderRadius: 24, padding: "32px 40px",
           border: `1px solid ${theme.border}40`, boxShadow: `0 20px 40px rgba(0,0,0,0.5)`
         }}>
@@ -183,7 +183,7 @@ const SignUpPage = () => {
               </p>
 
               {/* OAuth Buttons */}
-              <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
+              <div className="auth-oauth-buttons" style={{ display: "flex", gap: 12, marginBottom: 24 }}>
                 <button 
                   type="button"
                   onClick={() => handleOAuth('oauth_google')}

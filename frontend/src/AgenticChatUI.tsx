@@ -535,6 +535,19 @@ export default function App() {
   const clerkUserId = clerkUser?.id ?? "anonymous";
   const isDark = resolvedTheme === "dark";
 
+  // ── Mobile detection ─────────────────────────────────────────────
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+
+  // ── Profile modal state ───────────────────────────────────────────
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [editingProfileName, setEditingProfileName] = useState('');
+  const [profileSaveMsg, setProfileSaveMsg] = useState('');
+
   // GitHub Theme Mapping
   const T = {
     bg: isDark ? "#0d1117" : "#f6f8fa",
@@ -776,6 +789,9 @@ export default function App() {
     try { return JSON.parse(localStorage.getItem('agentic_saved_workflows') || '[]'); } catch { return []; }
   });
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
+
+  // Auto-close sidebar on mobile when page loads
+  useEffect(() => { if (isMobile) setLeftSidebarOpen(false); }, [isMobile]);
 
   // Chat History Handlers
   const loadChat = (chatId: string) => {
@@ -1365,16 +1381,30 @@ export default function App() {
     <div style={{
       display: "flex", height: "100vh", background: T.bg,
       fontFamily: "'Segoe UI', system-ui, sans-serif", color: T.text,
-      overflow: "hidden", transition: "background 0.3s, color 0.3s"
+      overflow: "hidden", transition: "background 0.3s, color 0.3s",
+      position: "relative"
     }}>
       {/* ── SIDEBAR ── */}
-      <div style={{
-        width: leftSidebarOpen ? 260 : 0, flexShrink: 0, background: T.sidebar,
-        backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)",
-        borderRight: leftSidebarOpen ? `1px solid ${T.border}` : "none", display: "flex",
-        flexDirection: "column", overflow: "hidden",
-        zIndex: 10, transition: "width 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-      }}>
+      {/* Mobile backdrop — tap to close sidebar */}
+      {isMobile && leftSidebarOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={() => setLeftSidebarOpen(false)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
+            zIndex: 199, backdropFilter: "blur(2px)"
+          }}
+        />
+      )}
+      <div
+        className={isMobile && leftSidebarOpen ? "sidebar-mobile-overlay" : ""}
+        style={{
+          width: leftSidebarOpen ? 260 : 0, flexShrink: 0, background: T.sidebar,
+          backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)",
+          borderRight: leftSidebarOpen ? `1px solid ${T.border}` : "none", display: "flex",
+          flexDirection: "column", overflow: "hidden",
+          zIndex: isMobile ? 200 : 10, transition: "width 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+        }}>
         <div style={{ width: 260, display: "flex", flexDirection: "column", height: "100%" }}>
         {/* Workspace Header & Theme Toggle */}
         <div style={{ padding: "20px 16px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -1551,17 +1581,27 @@ export default function App() {
           </div>
         </div>
 
-        {/* User Profile at bottom */}
+        {/* User Profile at bottom — click to open profile modal */}
         <div style={{ padding: "16px", borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "#e5e7eb"}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, overflow: "hidden" }}>
+          <button
+            onClick={() => { setEditingProfileName(clerkUser?.fullName || clerkUser?.firstName || ''); setProfileSaveMsg(''); setShowProfileModal(true); }}
+            title="Edit Profile"
+            style={{
+              display: "flex", alignItems: "center", gap: 10, overflow: "hidden",
+              background: "transparent", border: "none", cursor: "pointer", flex: 1,
+              padding: 0, borderRadius: 8, transition: "background 0.2s", textAlign: "left"
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)"}
+            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+          >
             {clerkUser?.imageUrl ? (
-              <img src={clerkUser.imageUrl} alt="Profile" style={{ width: 32, height: 32, borderRadius: "50%", border: `1px solid ${T.border}` }} />
+              <img src={clerkUser.imageUrl} alt="Profile" style={{ width: 32, height: 32, borderRadius: "50%", border: `2px solid ${T.accent}`, flexShrink: 0 }} />
             ) : (
-              <div style={{ width: 32, height: 32, borderRadius: "50%", background: T.muted, display: "flex", alignItems: "center", justifyContent: "center", color: T.secondary }}>
+              <div style={{ width: 32, height: 32, borderRadius: "50%", background: `linear-gradient(135deg, ${T.accent}33, ${T.accent}66)`, display: "flex", alignItems: "center", justifyContent: "center", color: T.accent, border: `2px solid ${T.accent}44`, flexShrink: 0 }}>
                 <User size={16} />
               </div>
             )}
-            <div style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            <div style={{ display: "flex", flexDirection: "column", overflow: "hidden", flex: 1 }}>
               <span style={{ fontSize: 13, fontWeight: 600, color: T.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                 {clerkUser?.fullName || clerkUser?.firstName || "Groit User"}
               </span>
@@ -1569,14 +1609,14 @@ export default function App() {
                 {clerkUser?.primaryEmailAddress?.emailAddress || "user@groit.ai"}
               </span>
             </div>
-          </div>
+          </button>
           <button
             onClick={() => { logout(); navigate("/login"); }}
             title="Sign Out"
             style={{
               background: "transparent", border: "none", cursor: "pointer",
               color: T.secondary, padding: 6, borderRadius: 6, display: "flex",
-              alignItems: "center", justifyContent: "center", transition: "all 0.2s"
+              alignItems: "center", justifyContent: "center", transition: "all 0.2s", flexShrink: 0
             }}
             onMouseEnter={e => { e.currentTarget.style.background = isDark ? "rgba(255,0,0,0.1)" : "#fee2e2"; e.currentTarget.style.color = "#ef4444"; }}
             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.secondary; }}
@@ -1823,8 +1863,8 @@ export default function App() {
         )}
       </div>
 
-      {/* ── RIGHT PANEL (RAIL SYSTEM) ── */}
-      <div style={{
+      {/* ── RIGHT PANEL (RAIL SYSTEM) — hidden on mobile ── */}
+      <div className="right-panel-hide-mobile" style={{
         width: rightPanelOpen ? 280 : 60, flexShrink: 0, background: T.sidebar,
         borderLeft: `1px solid ${T.border}`, display: "flex",
         flexDirection: "column", overflow: "hidden",
@@ -1934,7 +1974,7 @@ export default function App() {
               ><X size={20} /></button>
             </div>
 
-            <div style={{ flex: 1, overflowY: "auto", padding: 24, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+            <div className="toolkit-grid" style={{ flex: 1, overflowY: "auto", padding: 24, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
               {COMPOSIO_TOOLS.map((tool: any) => {
                 const isConnected = composioStatus.includes(tool.tool.toLowerCase());
                 const connecting = isConnecting === tool.tool;
@@ -1998,6 +2038,160 @@ export default function App() {
 
             <div style={{ padding: "16px 24px", background: "rgba(0,0,0,0.2)", borderTop: `1px solid ${T.border}`, fontSize: 12, color: T.secondary, textAlign: "center" }}>
               Secure integrations powered by Composio. Your data is encrypted and private.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── PROFILE POPUP MODAL ── */}
+      {showProfileModal && (
+        <div
+          style={{
+            position: "fixed", inset: 0, zIndex: 500,
+            background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: 16
+          }}
+          onClick={() => setShowProfileModal(false)}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: isDark ? "rgba(13, 17, 23, 0.97)" : "rgba(255,255,255,0.97)",
+              border: `1px solid ${T.border}`,
+              borderRadius: 20, width: "100%", maxWidth: 420,
+              boxShadow: isDark
+                ? "0 24px 64px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04)"
+                : "0 24px 64px rgba(0,0,0,0.15)",
+              overflow: "hidden",
+              animation: "fadeInUp 0.25s ease-out both"
+            }}
+          >
+            {/* Modal Header */}
+            <div style={{
+              padding: "20px 24px 16px",
+              borderBottom: `1px solid ${T.border}`,
+              display: "flex", alignItems: "center", justifyContent: "space-between"
+            }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>Profile Settings</div>
+              <button
+                onClick={() => setShowProfileModal(false)}
+                style={{ background: "transparent", border: "none", color: T.secondary, cursor: "pointer", display: "flex", padding: 4, borderRadius: 6 }}
+                onMouseEnter={e => e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)"}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Avatar + Name */}
+            <div style={{ padding: "28px 24px 20px", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+              <div style={{ position: "relative" }}>
+                {clerkUser?.imageUrl ? (
+                  <img
+                    src={clerkUser.imageUrl}
+                    alt="Profile"
+                    style={{
+                      width: 80, height: 80, borderRadius: "50%",
+                      border: `3px solid ${T.accent}`,
+                      boxShadow: `0 0 20px ${T.accent}44`
+                    }}
+                  />
+                ) : (
+                  <div style={{
+                    width: 80, height: 80, borderRadius: "50%",
+                    background: `linear-gradient(135deg, ${T.accent}33, ${T.accent}88)`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    border: `3px solid ${T.accent}`,
+                    boxShadow: `0 0 20px ${T.accent}44`,
+                    fontSize: 28, fontWeight: 700, color: T.accent
+                  }}>
+                    {(clerkUser?.fullName || clerkUser?.firstName || 'U').charAt(0).toUpperCase()}
+                  </div>
+                )}
+                {/* Online indicator */}
+                <div style={{
+                  position: "absolute", bottom: 4, right: 4,
+                  width: 14, height: 14, borderRadius: "50%",
+                  background: "#4ade80",
+                  border: `2px solid ${isDark ? "#0d1117" : "#fff"}`,
+                  boxShadow: "0 0 8px rgba(74,222,128,0.6)"
+                }} />
+              </div>
+
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 18, fontWeight: 700, color: T.text, marginBottom: 4 }}>
+                  {clerkUser?.fullName || clerkUser?.firstName || "Groit User"}
+                </div>
+                <div style={{ fontSize: 13, color: T.secondary }}>
+                  {clerkUser?.primaryEmailAddress?.emailAddress || "user@groit.ai"}
+                </div>
+              </div>
+            </div>
+
+            {/* Info rows */}
+            <div style={{ padding: "0 24px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{
+                background: isDark ? "rgba(255,255,255,0.03)" : "#f6f8fa",
+                border: `1px solid ${T.border}`, borderRadius: 12, padding: "14px 16px",
+                display: "flex", flexDirection: "column", gap: 10
+              }}>
+                {[
+                  { label: "Username", value: clerkUser?.username || "—" },
+                  { label: "Role", value: (String(clerkUser?.publicMetadata?.role || "developer")).charAt(0).toUpperCase() + (String(clerkUser?.publicMetadata?.role || "developer")).slice(1) },
+                  { label: "Member since", value: clerkUser?.createdAt ? new Date(clerkUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : "—" },
+                ].map(item => (
+                  <div key={item.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 13, color: T.secondary }}>{item.label}</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{item.value}</span>
+                  </div>
+                ))}
+              </div>
+
+              {profileSaveMsg && (
+                <div style={{ fontSize: 12, color: "#4ade80", textAlign: "center", padding: "4px 0" }}>
+                  {profileSaveMsg}
+                </div>
+              )}
+
+              <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+                <button
+                  onClick={() => {
+                    // Open Clerk hosted account portal
+                    window.open('https://accounts.clerk.dev/user', '_blank');
+                    setProfileSaveMsg('');
+                  }}
+                  style={{
+                    flex: 1, padding: "10px 16px", borderRadius: 10,
+                    background: T.accent, color: "#000",
+                    border: "none", fontWeight: 700, fontSize: 13, cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                    transition: "all 0.2s",
+                    boxShadow: `0 4px 12px ${T.accent}40`
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.transform = "translateY(-1px)"}
+                  onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
+                >
+                  <Pencil size={14} /> Edit Profile
+                </button>
+                <button
+                  onClick={() => { logout(); navigate("/login"); }}
+                  style={{
+                    flex: 1, padding: "10px 16px", borderRadius: 10,
+                    background: isDark ? "rgba(248,81,73,0.12)" : "#fff1f0",
+                    color: "#f85149",
+                    border: `1px solid ${isDark ? "rgba(248,81,73,0.25)" : "#fecaca"}`,
+                    fontWeight: 700, fontSize: 13, cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                    transition: "all 0.2s"
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = isDark ? "rgba(248,81,73,0.2)" : "#fee2e2"}
+                  onMouseLeave={e => e.currentTarget.style.background = isDark ? "rgba(248,81,73,0.12)" : "#fff1f0"}
+                >
+                  <LogOut size={14} /> Sign Out
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -268,8 +268,186 @@
   fill: hsl(213, 31%, 91%) !important;
 }
 
-/* ─── Mobile ─────────────────────────────────────────────────────────────────── */
+/* ─── Responsive Breakpoints ─────────────────────────────────────────────────── */
 
+/* ── Tablet (≤ 1024px) ── */
+@media (max-width: 1024px) {
+  .react-flow__controls { display: none !important; }
+
+  /* Right panel collapses to hidden on tablet */
+  .right-panel-tablet-hide {
+    display: none !important;
+  }
+
+  /* Toolkit modal: 2 columns instead of 3 */
+  .toolkit-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ── Mobile (≤ 768px) ── */
 @media (max-width: 768px) {
   .react-flow__controls { display: none !important; }
+
+  /* ── Sidebar becomes full-screen overlay on mobile ── */
+  .sidebar-mobile-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    z-index: 200 !important;
+    width: 280px !important;
+    box-shadow: 4px 0 30px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  /* Dimmer backdrop when sidebar is open */
+  .sidebar-backdrop {
+    display: block !important;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 199;
+    backdrop-filter: blur(2px);
+  }
+
+  /* ── Main chat area ── */
+  .chat-messages-area {
+    padding: 12px !important;
+  }
+
+  /* ── Chat input ── */
+  .chat-input-wrapper {
+    padding: 0 12px 20px !important;
+  }
+
+  /* ── Right panel hidden on mobile ── */
+  .right-panel-hide-mobile {
+    display: none !important;
+  }
+
+  /* ── Toolkit modal: 1 column on mobile ── */
+  .toolkit-grid {
+    grid-template-columns: 1fr !important;
+    padding: 16px !important;
+  }
+
+  /* ── Message bubbles: full width on mobile ── */
+  .message-user-bubble {
+    max-width: 90% !important;
+  }
+
+  /* ── Suggested prompts: stack vertically ── */
+  .suggested-prompts-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Landing nav ── */
+  .landing-nav {
+    padding: 16px 20px !important;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .landing-nav-actions {
+    gap: 8px !important;
+  }
+
+  .landing-nav-actions button {
+    padding: 8px 14px !important;
+    font-size: 13px !important;
+  }
+
+  /* ── Landing hero ── */
+  .landing-hero h1 {
+    font-size: 36px !important;
+    letter-spacing: -0.5px !important;
+  }
+
+  .landing-hero p {
+    font-size: 15px !important;
+  }
+
+  .landing-hero-buttons {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding: 0 20px !important;
+  }
+
+  .landing-hero-buttons button {
+    width: 100% !important;
+  }
+
+  /* Hide floating stats cards on mobile */
+  .landing-float-card {
+    display: none !important;
+  }
+
+  /* ── Login / SignUp card ── */
+  .auth-card {
+    padding: 24px 20px !important;
+    border-radius: 16px !important;
+  }
+
+  .auth-oauth-buttons {
+    flex-direction: column !important;
+  }
+
+  .auth-outer {
+    padding: 24px 16px !important;
+  }
+
+  /* ── Pricing cards: full width stack ── */
+  .pricing-card-grid {
+    flex-direction: column !important;
+    align-items: center !important;
+    padding: 0 16px !important;
+  }
+
+  .pricing-card-grid > * {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .pricing-nav {
+    padding: 16px 20px !important;
+  }
+
+  /* ── Dashboard welcome text ── */
+  .welcome-heading {
+    font-size: 22px !important;
+  }
+
+  /* ── Workflow visualization: scroll horizontally ── */
+  .workflow-visualization {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ── General text scaling ── */
+  .prose {
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+  }
 }
+
+/* ── Small mobile (≤ 480px) ── */
+@media (max-width: 480px) {
+  .landing-hero h1 {
+    font-size: 28px !important;
+  }
+
+  .auth-card {
+    padding: 20px 16px !important;
+  }
+
+  .toolkit-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Reduce input area padding */
+  .chat-input-wrapper {
+    padding: 0 8px 16px !important;
+  }
+}
+

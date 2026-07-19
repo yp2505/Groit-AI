@@ -51,6 +51,8 @@ if (!PUBLISHABLE_KEY) {
       <ClerkProvider
         publishableKey={PUBLISHABLE_KEY}
         afterSignOutUrl="/"
+        afterSignInUrl="/dashboard"
+        afterSignUpUrl="/dashboard"
         signInUrl="/login"
         signUpUrl="/sign-up"
       >

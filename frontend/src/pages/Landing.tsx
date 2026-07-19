@@ -77,7 +77,7 @@ const Landing = () => {
       }} />
 
       {/* Navigation */}
-      <nav style={{
+      <nav className="landing-nav" style={{
         position: "relative", zIndex: 20, display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "24px 48px", width: "100%", maxWidth: 1400, margin: "0 auto"
       }}>
@@ -91,7 +91,7 @@ const Landing = () => {
         </div>
 
         {/* Top Right Action */}
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div className="landing-nav-actions" style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <button
             onClick={() => navigate('/pricing')}
             style={{
@@ -128,6 +128,7 @@ const Landing = () => {
         
         {/* Floating Cards (Background) */}
         <motion.div
+          className="landing-float-card"
           initial={{ opacity: 0, x: -50, rotate: -15, y: 0 }}
           animate={{ opacity: 1, x: 0, rotate: -10, y: [0, -25, 0] }}
           transition={{ 
@@ -157,6 +158,7 @@ const Landing = () => {
         </motion.div>
 
         <motion.div
+          className="landing-float-card"
           initial={{ opacity: 0, x: 50, rotate: 15, y: 0 }}
           animate={{ opacity: 1, x: 0, rotate: 10, y: [0, -25, 0] }}
           transition={{ 
@@ -187,7 +189,8 @@ const Landing = () => {
 
         {/* Hero Copy */}
         <motion.div
-          style={{ maxWidth: 840, textAlign: "center", position: "relative", zIndex: 20 }}
+          className="landing-hero"
+          style={{ maxWidth: 840, textAlign: "center", position: "relative", zIndex: 20, padding: "0 20px" }}
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: [30, 0, -15, 0, -15, 0] }}
           transition={{ 
@@ -196,7 +199,7 @@ const Landing = () => {
           }}
         >
           <h1 style={{ 
-            fontSize: 64, fontWeight: 700, lineHeight: 1.1, 
+            fontSize: "clamp(32px, 7vw, 64px)", fontWeight: 700, lineHeight: 1.1, 
             letterSpacing: "-1.5px", marginBottom: 32, color: theme.textMain 
           }}>
             Experience seamless<br />
@@ -209,11 +212,11 @@ const Landing = () => {
             }}>modern teams</span>
           </h1>
 
-          <p style={{ fontSize: 18, color: theme.textMuted, lineHeight: 1.6, maxWidth: 640, margin: "0 auto 48px" }}>
+          <p style={{ fontSize: "clamp(14px, 2vw, 18px)", color: theme.textMuted, lineHeight: 1.6, maxWidth: 640, margin: "0 auto 48px" }}>
             The next-generation AI orchestration engine. Run parallel, multi-agent workflows across your entire tech stack with intelligent DAG execution and real-time observability.
           </p>
 
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16 }}>
+          <div className="landing-hero-buttons" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, flexWrap: "wrap" }}>
             <button
               onClick={() => navigate('/login')}
               style={{
