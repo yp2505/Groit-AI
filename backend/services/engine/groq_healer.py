@@ -1,7 +1,7 @@
 import json
 import logging
 from groq import Groq
-from config.settings import settings
+from config.settings import settings # type: ignore
 import re
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ Rules:
             messages=[{"role": "system", "content": system_prompt}]
         )
         raw = response.choices[0].message.content
-        clean = extract_json(raw)
+        clean = extract_json(raw or "")
         return json.loads(clean)
     except Exception as e:
         logger.error(f"[Self-Healing] Failed to generate recovery params: {e}")

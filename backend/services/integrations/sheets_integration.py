@@ -171,12 +171,18 @@ async def execute_sheets(action: str, params: Dict[str, Any], context: Optional[
         result = None
         if action == "read_row":
             row_key = params.get("row_key")
-            result = await asyncio.to_thread(_read_row_sync, worksheet, row_key)
+            if row_key is not None:
+                result = await asyncio.to_thread(_read_row_sync, worksheet, str(row_key))
+            else:
+                return {"status": "error", "error": "row_key is required"}
         
         elif action == "update_row":
             row_key = params.get("row_key")
             status = params.get("status")
-            result = await asyncio.to_thread(_update_row_sync, worksheet, row_key, status)
+            if row_key is not None and status is not None:
+                result = await asyncio.to_thread(_update_row_sync, worksheet, str(row_key), str(status))
+            else:
+                return {"status": "error", "error": "row_key and status are required"}
             
         elif action == "append_row":
             row_data = params.get("row_data", {})

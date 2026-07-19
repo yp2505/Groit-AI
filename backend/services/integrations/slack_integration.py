@@ -11,7 +11,7 @@ load_dotenv()
 logger = logging.getLogger("mcp_gateway.slack_integration")
 
 
-def get_slack_client(context: dict = None) -> WebClient:
+def get_slack_client(context: dict | None = None) -> WebClient:
     # Priority: Context (frontend OAuth) > Env (server default)
     ctx_creds = (context or {}).get("credentials", {}).get("slack", {})
     raw_token = ctx_creds.get("access_token") or ctx_creds.get("token")
@@ -186,7 +186,7 @@ def _format_commits_and_csv(commits: list) -> tuple:
     return message, csv_path
 
 
-async def execute_slack(action: str, params: dict, context: dict = None) -> dict:
+async def execute_slack(action: str, params: dict, context: dict | None = None) -> dict:
     """
     Executes a Slack action using the official slack_sdk.
     All SDK calls are wrapped in asyncio.to_thread since slack_sdk is synchronous.
@@ -282,8 +282,8 @@ async def execute_slack(action: str, params: dict, context: dict = None) -> dict
             logger.info(f"Sending Slack message to {channel}: {message[:80]}...")
             
             # CRITICAL: Log to local history for dashboard IMMEDIATELY
-            from services.slack_storage import slack_storage
-            slack_storage.add_message(channel, message)
+            # Removed slack_storage as it does not exist
+            pass
             
             output = await asyncio.to_thread(_send_message_sync, client, channel, message)
 
