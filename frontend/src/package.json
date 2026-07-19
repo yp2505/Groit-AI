@@ -1,9 +1,0 @@
-{
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview",
-    "start": "vite preview --port 3000 --host 0.0.0.0"
-  }
-}
