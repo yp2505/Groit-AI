@@ -72,7 +72,12 @@ const LoginPage = () => {
         setError('Further steps required. Please use OAuth.');
       }
     } catch (err: any) {
-      setError(err.errors?.[0]?.message || 'An error occurred');
+      if (err.errors?.[0]?.code === 'form_identifier_not_found') {
+        // User doesn't exist, seamlessly move them to sign up
+        navigate('/sign-up', { state: { email, password, from } });
+      } else {
+        setError(err.errors?.[0]?.message || 'An error occurred');
+      }
     } finally {
       setLoading(false);
     }
