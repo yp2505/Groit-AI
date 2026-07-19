@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { useTheme } from "next-themes";
-import { useUser } from "@clerk/clerk-react";
+import { useUser, useClerk } from "@clerk/clerk-react";
 import { useAppUser } from "@/hooks/useAppUser";
 import { useTools } from "./context/ToolsContext";
 import { connectComposioToolkit, disconnectComposioToolkit, API_BASE, fetchWithRetry } from "./lib/api";
@@ -532,6 +532,7 @@ export default function App() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { logout } = useAppUser();
   const { user: clerkUser } = useUser();
+  const clerk = useClerk();
   const clerkUserId = clerkUser?.id ?? "anonymous";
   const isDark = resolvedTheme === "dark";
 
@@ -2161,8 +2162,8 @@ export default function App() {
               <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
                 <button
                   onClick={() => {
-                    // Open Clerk hosted account portal
-                    window.open('https://accounts.clerk.dev/user', '_blank');
+                    clerk.openUserProfile();
+                    setShowProfileModal(false);
                     setProfileSaveMsg('');
                   }}
                   style={{
