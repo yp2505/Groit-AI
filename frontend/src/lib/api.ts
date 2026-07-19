@@ -2,9 +2,11 @@ import type { WorkflowStatus } from './types';
 import { getMockWorkflowStatus, resetSimulation } from './mockData';
 
 // ─── Configuration ───────────────────────────────────────────────────────────
-// All requests go through Vite's dev proxy (/api → localhost:8000)
-// Use the environment variable if provided (for production when backend is separate), otherwise fallback to proxy (/api)
-export const API_BASE = import.meta.env.VITE_API_URL || '/api';
+// In development: Vite proxy forwards /api → localhost:8000
+// In production: VITE_API_URL env var OR hardcoded Railway backend URL
+const PRODUCTION_BACKEND = 'https://groit-backend-production-e2cc.up.railway.app';
+const IS_DEV = import.meta.env.DEV;
+export const API_BASE = import.meta.env.VITE_API_URL || (IS_DEV ? '/api' : PRODUCTION_BACKEND);
 export const WS_BASE = import.meta.env.VITE_WS_URL || `ws://${window.location.host}`;
 const USE_MOCK = false;
 

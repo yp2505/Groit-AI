@@ -593,7 +593,7 @@ export default function App() {
     const userId = clerkUser?.primaryEmailAddress?.emailAddress || clerkUserId;
     if (!userId || userId === "anonymous") return;
     try {
-      const res = await fetch("/api/integrations/connections", {
+      const res = await fetch(`${API_BASE}/integrations/connections`, {
         headers: { "X-User-Id": userId }
       });
       if (res.ok) {
@@ -1060,7 +1060,7 @@ export default function App() {
 
       // Credentials are handled by Composio OAuth — no local credentials needed
 
-      const res = await fetch("/api/v3/execute", {
+      const res = await fetch(`${API_BASE}/v3/execute`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
