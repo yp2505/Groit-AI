@@ -4,7 +4,7 @@ import { getMockWorkflowStatus, resetSimulation } from './mockData';
 // ─── Configuration ───────────────────────────────────────────────────────────
 // In development: Vite proxy forwards /api → localhost:8000
 // In production: VITE_API_URL env var OR hardcoded Railway backend URL
-const PRODUCTION_BACKEND = 'https://groit-backend-production-e2cc.up.railway.app';
+const PRODUCTION_BACKEND = 'https://groit-backend-production-e2cc.up.railway.app/api';
 const IS_DEV = import.meta.env.DEV;
 export const API_BASE = import.meta.env.VITE_API_URL || (IS_DEV ? '/api' : PRODUCTION_BACKEND);
 export const WS_BASE = import.meta.env.VITE_WS_URL || `ws://${window.location.host}`;
