@@ -32,7 +32,13 @@ app.add_middleware(
 app.include_router(workflow_router, prefix="/api")
 app.include_router(integrations_router, prefix="/api")
 
+# Also serve without /api prefix for direct production calls
+# (frontend calls /v3/execute, /integrations/... directly in some builds)
+app.include_router(workflow_router)
+app.include_router(integrations_router)
+
 @app.get("/api/health")
+@app.get("/health")
 def health_check():
     return {"status": "healthy"}
 
