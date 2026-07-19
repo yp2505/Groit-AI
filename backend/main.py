@@ -29,8 +29,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(workflow_router)
-app.include_router(integrations_router)
+app.include_router(workflow_router, prefix="/api")
+app.include_router(integrations_router, prefix="/api")
 
 @app.get("/api/health")
 def health_check():
