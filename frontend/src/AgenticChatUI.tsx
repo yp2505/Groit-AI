@@ -1527,6 +1527,33 @@ export default function App() {
           </div>
         </div>
 
+        {/* Mobile Connected Apps (since right panel is hidden) */}
+        {isMobile && mergedApps.some((app: any) => app.connected) && (
+          <div style={{ padding: "0 16px 16px" }}>
+            <div style={{ fontSize: 11, color: T.secondary, textTransform: "uppercase", letterSpacing: 0.8, fontWeight: 700, marginBottom: 12 }}>
+              Connected Apps
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {mergedApps.filter((app: any) => app.connected).map((app: any) => (
+                <div 
+                  key={app.slug} 
+                  style={{ 
+                    display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: T.text, 
+                    background: T.card, padding: "8px 12px", borderRadius: 8, border: `1px solid ${T.border}`
+                  }}
+                >
+                  <div style={{
+                    width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
+                    background: isDark ? "#2ea043" : T.accent,
+                    boxShadow: isDark ? "0 0 5px rgba(46,160,67,0.5)" : `0 0 5px ${T.accent}80`
+                  }} />
+                  <span style={{ fontWeight: 500, textTransform: "capitalize" }}>{app.name || app.slug}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* User Profile at bottom — click to open profile modal */}
         <div style={{ padding: "16px", borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "#e5e7eb"}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <button
