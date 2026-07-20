@@ -320,9 +320,15 @@
     padding: 0 12px 20px !important;
   }
 
-  /* ── Right panel hidden on mobile ── */
-  .right-panel-hide-mobile {
-    display: none !important;
+  /* ── Right panel mobile overlay ── */
+  .right-panel-mobile-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    height: 100vh !important;
+    z-index: 200 !important;
+    width: 280px !important;
+    box-shadow: -4px 0 30px rgba(0, 0, 0, 0.5) !important;
   }
 
   /* ── Toolkit modal: 1 column on mobile ── */
