@@ -97,7 +97,7 @@ async def execute_workflow(request: WorkflowRequest, http_request: Request):
             with open(file_path, "wb") as f:
                 f.write(file_bytes)
             
-            sys_info = f"\n\n[SYSTEM INFO: The user attached a file named '{request.attached_file_name}'. It is saved locally at '{file_path}'. If you use a tool to send this file (like Gmail), you MUST pass this exact file path in the tool arguments. Also, you MUST always include a 'subject' and 'body' (e.g. 'File Attached' and 'Please find the attached file.') if the user did not specify one. Do not leave them empty.]"
+            sys_info = f"\n\n[SYSTEM INFO: The user attached a file named '{request.attached_file_name}'. It is saved locally at '{file_path}'. If you use a tool to send this file (like Gmail), the attachment field MUST be a string representing the file path (e.g., '{file_path}'). DO NOT use an object or dictionary for the attachment. Also, you MUST always include a 'subject' and 'body' (e.g. 'File Attached' and 'Please find the attached file.') if the user did not specify one. Do not leave them empty.]"
             user_input += sys_info
             logger.info(f"Saved attached file to {file_path}")
         except Exception as e:
