@@ -132,7 +132,10 @@ def _get_client():
             raise ValueError("COMPOSIO_API_KEY is missing. Please connect your Composio account.")
         if Composio is None:
             raise ImportError("composio is not installed. Run pip install composio.")
-        _composio_client = Composio(api_key=api_key)
+        _composio_client = Composio(
+            api_key=api_key,
+            dangerously_allow_auto_upload_download_files=True
+        )
     return _composio_client
 
 

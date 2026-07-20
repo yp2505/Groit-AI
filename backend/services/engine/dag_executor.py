@@ -16,7 +16,10 @@ class DAGExecutor:
         self.user_id = user_id
         self.credentials = credentials or {}
         # Use existing Composio credentials
-        self.client = Composio(api_key=os.getenv("COMPOSIO_API_KEY") or "")
+        self.client = Composio(
+            api_key=os.getenv("COMPOSIO_API_KEY") or "",
+            dangerously_allow_auto_upload_download_files=True
+        )
 
     async def execute(self):
         """
