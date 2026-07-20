@@ -134,7 +134,8 @@ def _get_client():
             raise ImportError("composio is not installed. Run pip install composio.")
         _composio_client = Composio(
             api_key=api_key,
-            dangerously_allow_auto_upload_download_files=True
+            dangerously_allow_auto_upload_download_files=True,
+            file_upload_dirs=['/tmp', '/tmp/']
         )
     return _composio_client
 

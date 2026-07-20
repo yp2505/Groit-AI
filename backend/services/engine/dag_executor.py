@@ -18,7 +18,8 @@ class DAGExecutor:
         # Use existing Composio credentials
         self.client = Composio(
             api_key=os.getenv("COMPOSIO_API_KEY") or "",
-            dangerously_allow_auto_upload_download_files=True
+            dangerously_allow_auto_upload_download_files=True,
+            file_upload_dirs=['/tmp', '/tmp/']
         )
 
     async def execute(self):
