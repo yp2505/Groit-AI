@@ -574,6 +574,7 @@ export default function App() {
   const [input, setInput] = useState("");
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [editingMsg, setEditingMsg] = useState(null);
   const [chatStarted, setChatStarted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -1804,20 +1805,59 @@ export default function App() {
                       rows={1}
                     />
                     <input type="file" ref={fileInputRef} onChange={handleFileChange} style={{ display: "none" }} />
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      title="Attach File"
-                      style={{
-                        width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
-                        background: "transparent", border: "none", cursor: "pointer",
-                        color: T.secondary, display: "flex", alignItems: "center", justifyContent: "center",
-                        transition: "all 0.15s"
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.color = T.text}
-                      onMouseLeave={e => e.currentTarget.style.color = T.secondary}
-                    >
-                      <Paperclip size={18} />
-                    </button>
+                    <div style={{ position: "relative" }}>
+                      <button
+                        onClick={() => setShowAttachMenu(!showAttachMenu)}
+                        title="Attach File"
+                        style={{
+                          width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
+                          background: showAttachMenu ? (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)") : "transparent",
+                          border: "none", cursor: "pointer",
+                          color: showAttachMenu ? T.text : T.secondary, display: "flex", alignItems: "center", justifyContent: "center",
+                          transition: "all 0.15s"
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.color = T.text}
+                        onMouseLeave={e => { if (!showAttachMenu) e.currentTarget.style.color = T.secondary }}
+                      >
+                        <Paperclip size={18} />
+                      </button>
+                      
+                      {showAttachMenu && (
+                        <div style={{
+                          position: "absolute", bottom: "calc(100% + 10px)", left: "50%", transform: "translateX(-50%)",
+                          background: isDark ? "#1e2329" : "#ffffff",
+                          border: `1px solid ${T.border}`, borderRadius: 12, padding: 8,
+                          boxShadow: "0 10px 40px rgba(0,0,0,0.2)",
+                          display: "flex", flexDirection: "column", gap: 4, width: 200, zIndex: 100,
+                          animation: "fadeInUp 0.2s ease-out"
+                        }}>
+                          <button
+                            onClick={() => { fileInputRef.current?.click(); setShowAttachMenu(false); }}
+                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "transparent", border: "none", borderRadius: 8, color: T.text, cursor: "pointer", fontSize: 13, fontWeight: 500, textAlign: "left", transition: "all 0.1s" }}
+                            onMouseEnter={e => e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)"}
+                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                          >
+                            <span style={{ fontSize: 16 }}>💻</span> Local Storage
+                          </button>
+                          <button
+                            onClick={() => { alert("Google Drive integration coming soon!"); setShowAttachMenu(false); }}
+                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "transparent", border: "none", borderRadius: 8, color: T.text, cursor: "pointer", fontSize: 13, fontWeight: 500, textAlign: "left", transition: "all 0.1s" }}
+                            onMouseEnter={e => e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)"}
+                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                          >
+                            <span style={{ fontSize: 16 }}>📁</span> Google Drive
+                          </button>
+                          <button
+                            onClick={() => { alert("Dropbox integration coming soon!"); setShowAttachMenu(false); }}
+                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "transparent", border: "none", borderRadius: 8, color: T.text, cursor: "pointer", fontSize: 13, fontWeight: 500, textAlign: "left", transition: "all 0.1s" }}
+                            onMouseEnter={e => e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)"}
+                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                          >
+                            <span style={{ fontSize: 16 }}>☁️</span> Dropbox
+                          </button>
+                        </div>
+                      )}
+                    </div>
                     <button
                       onClick={handleMicClick}
                       title="Voice Typing"
