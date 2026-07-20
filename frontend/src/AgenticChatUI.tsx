@@ -2177,6 +2177,62 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* ── Voice Assistant Overlay ── */}
+      {isListening && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 9999, background: "#000",
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-between",
+          padding: "60px 20px 40px", color: "#fff", animation: "fadeInUp 0.3s ease-out"
+        }}>
+          {/* Header */}
+          <div style={{ fontSize: 16, fontWeight: 500, color: "#a1a1aa", letterSpacing: 0.5 }}>
+            Listening...
+          </div>
+
+          {/* Central Animated Orb */}
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div className="voice-orb" />
+          </div>
+
+          {/* Bottom Controls */}
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            width: "100%", maxWidth: 320, padding: "0 20px", marginBottom: 20
+          }}>
+            <button
+              onClick={handleMicClick}
+              title="End Voice Recording"
+              style={{
+                width: 60, height: 60, borderRadius: "50%", background: "#27272a", border: "none",
+                display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.4)", transition: "transform 0.2s, background 0.2s"
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.05)"; e.currentTarget.style.background = "#3f3f46"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.background = "#27272a"; }}
+            >
+              <Mic size={24} color="#fff" />
+            </button>
+            
+            <button
+              onClick={() => {
+                if (recognitionRef.current) recognitionRef.current.stop();
+                setIsListening(false);
+              }}
+              title="Cancel"
+              style={{
+                width: 60, height: 60, borderRadius: "50%", background: "#27272a", border: "none",
+                display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.4)", transition: "transform 0.2s, background 0.2s"
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.05)"; e.currentTarget.style.background = "#3f3f46"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.background = "#27272a"; }}
+            >
+              <X size={24} color="#fff" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
