@@ -6,7 +6,7 @@ import { useAppUser } from "@/hooks/useAppUser";
 import { useTools } from "./context/ToolsContext";
 import { connectComposioToolkit, disconnectComposioToolkit, API_BASE, fetchWithRetry } from "./lib/api";
 import ReactMarkdown from "react-markdown";
-import { Sidebar as SidebarIcon, Sun, Moon, Plus, User, LogOut, Settings, Blocks, Clock, Puzzle, Library, Lock, Edit2, X, Check, Pencil, Trash2, Copy, ShieldAlert, Plug, Mic, Send, Terminal, ChevronRight, ChevronDown, Play, Square, CircleDashed, MoreHorizontal, AlertCircle, CheckCircle2, Activity, FileCode2, Database, Cpu, Globe, Key, FileText, Download, Upload, RefreshCw, MessageSquare, Search, Bookmark, MoreVertical } from "lucide-react";
+import { Sidebar as SidebarIcon, Sun, Moon, Plus, User, LogOut, Settings, Blocks, Clock, Puzzle, Library, Lock, Edit2, X, Check, Pencil, Trash2, Copy, ShieldAlert, Plug, Mic, Send, Terminal, ChevronRight, ChevronDown, Play, Square, CircleDashed, MoreHorizontal, AlertCircle, CheckCircle2, Activity, FileCode2, Database, Cpu, Globe, Key, FileText, Download, Upload, RefreshCw, MessageSquare, Search, Bookmark, MoreVertical, Paperclip } from "lucide-react";
 
 const SUGGESTED_PROMPTS = [
   "Critical bug in Jira → create GitHub branch → notify #all-daiict on Slack",
@@ -572,6 +572,8 @@ export default function App() {
 
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [editingMsg, setEditingMsg] = useState(null);
   const [chatStarted, setChatStarted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -963,6 +965,7 @@ export default function App() {
     }
 
     setInput("");
+    setAttachedFile(null);
     setChatStarted(true);
     setIsLoading(true);
     
@@ -1118,6 +1121,12 @@ export default function App() {
       const textarea = document.querySelector('textarea');
       if (textarea) { textarea.focus(); textarea.selectionStart = textarea.selectionEnd = text.length; }
     }, 50);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setAttachedFile(e.target.files[0]);
+    }
   };
 
   // ─── HITL Approval / Rejection Handlers ─────────────────────────
@@ -1711,7 +1720,7 @@ export default function App() {
                 <div
                   className="laser-border-container"
                   style={{
-                    display: "flex", alignItems: "flex-end", gap: 10,
+                    display: "flex", flexDirection: "column", gap: 8,
                     "--laser-bg-color": isDark ? "rgba(18, 22, 28, 0.85)" : "rgba(255, 255, 255, 0.9)",
                     "--laser-color": isDark ? "hsl(142, 71%, 45%)" : T.accent,
                     padding: "10px 20px", transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -1721,83 +1730,108 @@ export default function App() {
                   onMouseLeave={(e) => { e.currentTarget.style.boxShadow = isDark ? "0 8px 30px rgba(0,0,0,0.3)" : "0 4px 30px rgba(0,0,0,0.1)"; }}
                   onFocus={(e) => { e.currentTarget.style.boxShadow = isDark ? "0 8px 30px rgba(0,0,0,0.3)" : "0 4px 30px rgba(0,0,0,0.1)"; }}
                   onBlur={(e) => { e.currentTarget.style.boxShadow = isDark ? "0 8px 30px rgba(0,0,0,0.3)" : "0 4px 30px rgba(0,0,0,0.1)"; }}>
-                  <button
-                    onClick={() => setShowToolkitModal(true)}
-                    title="Toolkits & Integrations"
-                    style={{
-                      height: 34, padding: "0 10px", flexShrink: 0,
-                      background: "transparent",
-                      border: "none", cursor: "pointer",
-                      color: T.secondary, fontSize: 13, fontWeight: 600, display: "flex",
-                      alignItems: "center", justifyContent: "center", gap: 6,
-                      transition: "all 0.15s", whiteSpace: "nowrap"
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.color = T.text; }}
-                    onMouseLeave={e => { e.currentTarget.style.color = T.secondary; }}
-                  >
-                    <Plus size={16} strokeWidth={2.5} /> Toolkits
-                  </button>
-                  <textarea
-                    ref={textareaRef}
-                    value={input}
-                    onChange={e => { setInput(e.target.value); autoResize(); }}
-                    onKeyDown={e => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSend();
-                      }
-                    }}
-                    placeholder="Describe your workflow..."
-                    data-gramm="false"
-                    data-gramm_editor="false"
-                    data-enable-grammarly="false"
-                    spellCheck={false}
-                    style={{
-                      flex: 1, background: "transparent", border: "none", outline: "none",
-                      color: T.text, fontSize: 14, lineHeight: "22.4px", resize: "none",
-                      minHeight: 34, maxHeight: 200, fontFamily: "inherit", padding: "6px 4px",
-                    }}
-                    rows={1}
-                  />
-                  <button
-                    onClick={handleMicClick}
-                    title="Voice Typing"
-                    style={{
-                      width: 34, height: 34, borderRadius: "50%", flexShrink: 0, marginRight: 8,
-                      background: isListening ? "rgba(239, 68, 68, 0.2)" : "transparent",
-                      border: "none", cursor: "pointer",
-                      color: isListening ? "#ef4444" : T.secondary,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      transition: "all 0.15s",
-                      animation: isListening ? "pulse 1.5s infinite" : "none"
-                    }}
-                    onMouseEnter={e => { if (!isListening) e.currentTarget.style.color = T.text; }}
-                    onMouseLeave={e => { if (!isListening) e.currentTarget.style.color = T.secondary; }}
-                  >
-                    <Mic size={18} />
-                  </button>
-                  {isLoading ? (
+                  
+                  {attachedFile && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 12px", background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", borderRadius: 8, width: "fit-content" }}>
+                      <Paperclip size={14} color={T.accent} />
+                      <span style={{ fontSize: 12, color: T.text, maxWidth: 200, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{attachedFile.name}</span>
+                      <button onClick={() => setAttachedFile(null)} style={{ background: "none", border: "none", color: T.secondary, cursor: "pointer", display: "flex", padding: 2 }}><X size={14} /></button>
+                    </div>
+                  )}
+
+                  <div style={{ display: "flex", alignItems: "flex-end", gap: 10, width: "100%" }}>
                     <button
-                      onClick={() => abortControllerRef.current?.abort()}
-                      title="Stop Execution"
+                      onClick={() => setShowToolkitModal(true)}
+                      title="Toolkits & Integrations"
                       style={{
-                        width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
-                        background: "#ef4444", border: "none", cursor: "pointer",
-                        color: "#fff", fontSize: 16, display: "flex",
-                        alignItems: "center", justifyContent: "center",
-                        transition: "all 0.2s",
-                        boxShadow: "0 4px 12px rgba(239,68,68,0.4)"
+                        height: 34, padding: "0 10px", flexShrink: 0,
+                        background: "transparent",
+                        border: "none", cursor: "pointer",
+                        color: T.secondary, fontSize: 13, fontWeight: 600, display: "flex",
+                        alignItems: "center", justifyContent: "center", gap: 6,
+                        transition: "all 0.15s", whiteSpace: "nowrap"
                       }}
+                      onMouseEnter={e => { e.currentTarget.style.color = T.text; }}
+                      onMouseLeave={e => { e.currentTarget.style.color = T.secondary; }}
                     >
-                      <Square size={14} fill="currentColor" />
+                      <Plus size={16} strokeWidth={2.5} /> Toolkits
                     </button>
-                  ) : (
+                    <textarea
+                      ref={textareaRef}
+                      value={input}
+                      onChange={e => { setInput(e.target.value); autoResize(); }}
+                      onKeyDown={e => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSend();
+                        }
+                      }}
+                      placeholder="Describe your workflow..."
+                      data-gramm="false"
+                      data-gramm_editor="false"
+                      data-enable-grammarly="false"
+                      spellCheck={false}
+                      style={{
+                        flex: 1, background: "transparent", border: "none", outline: "none",
+                        color: T.text, fontSize: 14, lineHeight: "22.4px", resize: "none",
+                        minHeight: 34, maxHeight: 200, fontFamily: "inherit", padding: "6px 4px",
+                      }}
+                      rows={1}
+                    />
+                    <input type="file" ref={fileInputRef} onChange={handleFileChange} style={{ display: "none" }} />
                     <button
-                      onClick={() => handleSend()}
-                      disabled={!input.trim() || isLoading}
+                      onClick={() => fileInputRef.current?.click()}
+                      title="Attach File"
                       style={{
                         width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
-                        background: input.trim() && !isLoading ? T.accent : isDark ? "rgba(255,255,255,0.1)" : "#d1d5db",
+                        background: "transparent", border: "none", cursor: "pointer",
+                        color: T.secondary, display: "flex", alignItems: "center", justifyContent: "center",
+                        transition: "all 0.15s"
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.color = T.text}
+                      onMouseLeave={e => e.currentTarget.style.color = T.secondary}
+                    >
+                      <Paperclip size={18} />
+                    </button>
+                    <button
+                      onClick={handleMicClick}
+                      title="Voice Typing"
+                      style={{
+                        width: 34, height: 34, borderRadius: "50%", flexShrink: 0, marginRight: 8,
+                        background: isListening ? "rgba(239, 68, 68, 0.2)" : "transparent",
+                        border: "none", cursor: "pointer",
+                        color: isListening ? "#ef4444" : T.secondary,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        transition: "all 0.15s",
+                        animation: isListening ? "pulse 1.5s infinite" : "none"
+                      }}
+                      onMouseEnter={e => { if (!isListening) e.currentTarget.style.color = T.text; }}
+                      onMouseLeave={e => { if (!isListening) e.currentTarget.style.color = T.secondary; }}
+                    >
+                      <Mic size={18} />
+                    </button>
+                    {isLoading ? (
+                      <button
+                        onClick={() => abortControllerRef.current?.abort()}
+                        title="Stop Execution"
+                        style={{
+                          width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
+                          background: "#ef4444", border: "none", cursor: "pointer",
+                          color: "#fff", fontSize: 16, display: "flex",
+                          alignItems: "center", justifyContent: "center",
+                          transition: "all 0.2s",
+                          boxShadow: "0 4px 12px rgba(239,68,68,0.4)"
+                        }}
+                      >
+                        <Square size={14} fill="currentColor" />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleSend()}
+                        disabled={(!input.trim() && !attachedFile) || isLoading}
+                        style={{
+                          width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
+                          background: (input.trim() || attachedFile) && !isLoading ? T.accent : isDark ? "rgba(255,255,255,0.1)" : "#d1d5db",
                         border: "none", cursor: input.trim() && !isLoading ? "pointer" : "default",
                         color: input.trim() && !isLoading ? "#000" : T.secondary, fontSize: 16, display: "flex",
                         alignItems: "center", justifyContent: "center",
@@ -1808,6 +1842,7 @@ export default function App() {
                       <Send size={16} strokeWidth={2.5} style={{ marginLeft: 2 }} />
                     </button>
                   )}
+                  </div>
                 </div>
                 <p style={{ textAlign: "center", fontSize: 11, color: T.secondary, marginTop: 12 }}>
                   Groit is AI and can make mistakes.
