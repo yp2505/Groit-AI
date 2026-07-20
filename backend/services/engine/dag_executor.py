@@ -7,6 +7,7 @@ from schemas.dag_schema import WorkflowDAG  # type: ignore
 from config.settings import settings  # type: ignore
 from groq import Groq
 from services.integrations.composio_integration import composio_llm_dispatch  # type: ignore
+from services.engine.security_scanner import run_security_checks, SecurityViolationError  # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +51,14 @@ class DAGExecutor:
                 resolved_params = self._resolve_params(node.params, results)
                 node_intent = f"Execute action '{node.action}' with params: {resolved_params}"
                 tool_lower = node.tool.lower()
-                
+
+                # ── Security gate: URL scan + entropy check ──────────────────
+                await run_security_checks(
+                    user_id=self.user_id,
+                    params=resolved_params,
+                    api_key=settings.GOOGLE_SAFE_BROWSING_KEY
+                )
+
                 groq_client = Groq(api_key=settings.GROQ_API_KEY)
                 response_dict = await composio_llm_dispatch(
                     tool_slug=tool_lower,
@@ -68,6 +76,11 @@ class DAGExecutor:
                 results[current_id] = {"status": "success", "output": response_dict.get("output", {})}
                 logger.info(f"Node {current_id} succeeded.")
                 
+            except SecurityViolationError as sec_e:
+                logger.warning(f"SECURITY BLOCK on node {current_id} for user {self.user_id}: {sec_e}")
+                results[current_id] = {"status": "blocked", "error": str(sec_e)}
+                # Abort the entire workflow on a security violation
+                break
             except Exception as e:
                 logger.error(f"Node {current_id} failed after recovery attempts: {e}")
                 results[current_id] = {"status": "error", "error": str(e)}

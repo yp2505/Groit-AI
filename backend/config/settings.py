@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     COMPOSIO_API_KEY: str = os.getenv("COMPOSIO_API_KEY", "")
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
     OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
+    GOOGLE_SAFE_BROWSING_KEY: str = os.getenv("GOOGLE_SAFE_BROWSING_KEY", "")
 
     model_config = SettingsConfigDict(
         env_file=".env",
