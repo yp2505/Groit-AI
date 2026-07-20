@@ -2181,13 +2181,20 @@ export default function App() {
       {/* ── Voice Assistant Overlay ── */}
       {isListening && (
         <div style={{
-          position: "fixed", inset: 0, zIndex: 9999, background: "#000",
+          position: "fixed", inset: 0, zIndex: 9999,
+          background: isDark ? "rgba(0, 0, 0, 0.75)" : "rgba(255, 255, 255, 0.85)",
+          backdropFilter: "blur(8px)",
           display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-between",
-          padding: "60px 20px 40px", color: "#fff", animation: "fadeInUp 0.3s ease-out"
+          padding: "60px 20px 40px", color: isDark ? "#fff" : "#000", animation: "fadeInUp 0.3s ease-out"
         }}>
           {/* Header */}
-          <div style={{ fontSize: 16, fontWeight: 500, color: "#a1a1aa", letterSpacing: 0.5 }}>
+          <div style={{ fontSize: 16, fontWeight: 500, color: isDark ? "#a1a1aa" : "#71717a", letterSpacing: 0.5, textAlign: "center", maxWidth: "80vw" }}>
             Listening...
+            {input && (
+              <div style={{ marginTop: 12, fontSize: 18, color: isDark ? "#fff" : "#000", wordWrap: "break-word" }}>
+                {input}
+              </div>
+            )}
           </div>
 
           {/* Central Animated Orb */}
@@ -2204,14 +2211,14 @@ export default function App() {
               onClick={handleMicClick}
               title="End Voice Recording"
               style={{
-                width: 60, height: 60, borderRadius: "50%", background: "#27272a", border: "none",
+                width: 60, height: 60, borderRadius: "50%", background: isDark ? "#27272a" : "#f4f4f5", border: "none",
                 display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.4)", transition: "transform 0.2s, background 0.2s"
+                boxShadow: isDark ? "0 4px 20px rgba(0,0,0,0.4)" : "0 4px 20px rgba(0,0,0,0.1)", transition: "transform 0.2s, background 0.2s"
               }}
-              onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.05)"; e.currentTarget.style.background = "#3f3f46"; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.background = "#27272a"; }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.05)"; e.currentTarget.style.background = isDark ? "#3f3f46" : "#e4e4e7"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.background = isDark ? "#27272a" : "#f4f4f5"; }}
             >
-              <Mic size={24} color="#fff" />
+              <Mic size={24} color={isDark ? "#fff" : "#000"} />
             </button>
             
             <button
@@ -2221,14 +2228,14 @@ export default function App() {
               }}
               title="Cancel"
               style={{
-                width: 60, height: 60, borderRadius: "50%", background: "#27272a", border: "none",
+                width: 60, height: 60, borderRadius: "50%", background: isDark ? "#27272a" : "#f4f4f5", border: "none",
                 display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.4)", transition: "transform 0.2s, background 0.2s"
+                boxShadow: isDark ? "0 4px 20px rgba(0,0,0,0.4)" : "0 4px 20px rgba(0,0,0,0.1)", transition: "transform 0.2s, background 0.2s"
               }}
-              onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.05)"; e.currentTarget.style.background = "#3f3f46"; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.background = "#27272a"; }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.05)"; e.currentTarget.style.background = isDark ? "#3f3f46" : "#e4e4e7"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.background = isDark ? "#27272a" : "#f4f4f5"; }}
             >
-              <X size={24} color="#fff" />
+              <X size={24} color={isDark ? "#fff" : "#000"} />
             </button>
           </div>
         </div>

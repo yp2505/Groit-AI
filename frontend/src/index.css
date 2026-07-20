@@ -160,9 +160,9 @@
 /* ─── Voice Orb Animation ────────────────────────────────────────────────────── */
 
 @keyframes voiceOrbPulse {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(147, 197, 253, 0.4); }
-  50% { transform: scale(1.05); box-shadow: 0 0 0 30px rgba(147, 197, 253, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(147, 197, 253, 0); }
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4); }
+  50% { transform: scale(1.05); box-shadow: 0 0 0 30px rgba(74, 222, 128, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
 }
 
 @keyframes voiceOrbMorph {
@@ -176,10 +176,10 @@
 .voice-orb {
   width: 150px;
   height: 150px;
-  background: radial-gradient(circle at 30% 30%, #ffffff, #bae6fd, #3b82f6);
+  background: radial-gradient(circle at 30% 30%, #ffffff, #86efac, #22c55e);
   border-radius: 50%;
   animation: voiceOrbPulse 2s infinite ease-in-out, voiceOrbMorph 4s infinite ease-in-out;
-  box-shadow: 0 0 40px rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 40px rgba(34, 197, 94, 0.5);
   margin: 0 auto;
 }
 
