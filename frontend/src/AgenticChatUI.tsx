@@ -2182,8 +2182,8 @@ export default function App() {
       {isListening && (
         <div style={{
           position: "fixed", inset: 0, zIndex: 9999,
-          background: isDark ? "rgba(0, 0, 0, 0.75)" : "rgba(255, 255, 255, 0.85)",
-          backdropFilter: "blur(8px)",
+          background: isDark ? "rgba(0, 0, 0, 0.3)" : "rgba(255, 255, 255, 0.4)",
+          backdropFilter: "blur(4px)",
           display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-between",
           padding: "60px 20px 40px", color: isDark ? "#fff" : "#000", animation: "fadeInUp 0.3s ease-out"
         }}>
