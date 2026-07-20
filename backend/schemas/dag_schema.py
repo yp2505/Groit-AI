@@ -17,4 +17,5 @@ class WorkflowRequest(BaseModel):
     dag: Optional[WorkflowDAG] = None
     chat_history: Optional[List[Dict[str, Any]]] = None
     credentials: Optional[Dict[str, Any]] = None
-
+    attached_file_data: Optional[str] = None
+    attached_file_name: Optional[str] = None

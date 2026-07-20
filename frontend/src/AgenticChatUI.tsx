@@ -944,11 +944,22 @@ export default function App() {
   // ─── Main workflow execution ─────────────────────────────────────
   const handleSend = async (text?: string) => {
     const content = (text || input).trim();
-    if (!content) return;
+    if (!content && !attachedFile) return;
+
+    // Capture file before clearing
+    const fileToSend = attachedFile;
 
     const userMsgId = Date.now();
     const thinkingId = userMsgId + 1;
-    const newUserMsg = { id: userMsgId, role: "user", content };
+    
+    let displayContent = content;
+    if (fileToSend && !content) {
+      displayContent = `Sent a file: ${fileToSend.name}`;
+    } else if (fileToSend) {
+      displayContent = `${content}\n\n[Attached file: ${fileToSend.name}]`;
+    }
+
+    const newUserMsg = { id: userMsgId, role: "user", content: displayContent };
     const thinkingMsg = {
       id: thinkingId, role: "assistant",
       thinking: "🧠 Generating execution plan via LLM…",
@@ -997,6 +1008,18 @@ export default function App() {
 
       // Credentials are handled by Composio OAuth — no local credentials needed
 
+      let attached_file_data = null;
+      let attached_file_name = null;
+
+      if (fileToSend) {
+        attached_file_name = fileToSend.name;
+        attached_file_data = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(fileToSend);
+        });
+      }
+
       const res = await fetch(`${API_BASE}/v3/execute`, {
         method: "POST",
         headers: {
@@ -1006,7 +1029,9 @@ export default function App() {
         body: JSON.stringify({
           user_input: content,
           chat_history: currentChatHistory,
-          credentials: {}
+          credentials: {},
+          attached_file_data,
+          attached_file_name
         }),
         signal: abortControllerRef.current?.signal,
       });

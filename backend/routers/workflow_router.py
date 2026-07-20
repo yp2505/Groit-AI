@@ -1,6 +1,10 @@
 from fastapi import APIRouter, HTTPException, Request
 import logging
 import re
+import base64
+import os
+import tempfile
+import uuid
 from typing import cast, List, Any
 from schemas.dag_schema import WorkflowRequest, WorkflowDAG  # type: ignore
 from services.models.llm_resolver import generate_dag  # type: ignore
@@ -81,6 +85,23 @@ async def execute_workflow(request: WorkflowRequest, http_request: Request):
     chat_history = getattr(request, "chat_history", []) or []
 
     logger.info(f"Received execute request: '{user_input[:60]}' from user: {user_id}")
+
+    if getattr(request, "attached_file_data", None) and getattr(request, "attached_file_name", None):
+        try:
+            data_str = request.attached_file_data
+            encoded = data_str.split(",", 1)[1] if "," in data_str else data_str
+            file_bytes = base64.b64decode(encoded)
+            file_ext = os.path.splitext(request.attached_file_name)[1]
+            unique_filename = f"{uuid.uuid4().hex}{file_ext}"
+            file_path = os.path.join(tempfile.gettempdir(), unique_filename)
+            with open(file_path, "wb") as f:
+                f.write(file_bytes)
+            
+            sys_info = f"\n\n[SYSTEM INFO: The user attached a file named '{request.attached_file_name}'. It is saved locally at '{file_path}'. If the user asks you to send or use this file, you MUST pass this exact file path in the tool arguments (e.g. as attachments for Gmail).]"
+            user_input += sys_info
+            logger.info(f"Saved attached file to {file_path}")
+        except Exception as e:
+            logger.error(f"Failed to process attached file: {e}")
 
     # ── Step 1: Detect conversational vs workflow ──────────────────────────────
     if not request.dag and not is_workflow_request(user_input):
