@@ -703,23 +703,24 @@ export default function App() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { id } = useParams();
   const [history, setHistory] = useState<any[]>([]);
-  const [chats, setChats] = useState<any[]>(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem('agentic_chats') || '[]');
-      return stored;
-    } catch { 
-      return []; 
-    }
-  });
+  const [chats, setChats] = useState<any[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [editingChatId, setEditingChatId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
-  const [savedWorkflows, setSavedWorkflows] = useState<any[]>(() => {
-    try { return JSON.parse(localStorage.getItem('agentic_saved_workflows') || '[]'); } catch { return []; }
-  });
+  const [savedWorkflows, setSavedWorkflows] = useState<any[]>([]);
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
+
+  useEffect(() => {
+    try {
+      setChats(JSON.parse(localStorage.getItem(`agentic_chats_${clerkUserId}`) || '[]'));
+      setSavedWorkflows(JSON.parse(localStorage.getItem(`agentic_saved_workflows_${clerkUserId}`) || '[]'));
+    } catch {
+      setChats([]);
+      setSavedWorkflows([]);
+    }
+  }, [clerkUserId]);
 
   // Auto-close sidebar on mobile when page loads
   useEffect(() => { if (isMobile) setLeftSidebarOpen(false); }, [isMobile]);
@@ -738,7 +739,7 @@ export default function App() {
   const handleRenameChat = (chatId: string, newTitle: string) => {
     setChats(prev => {
       const newChats = prev.map(c => c.id === chatId ? { ...c, title: newTitle } : c);
-      localStorage.setItem('agentic_chats', JSON.stringify(newChats));
+      localStorage.setItem(`agentic_chats_${clerkUserId}`, JSON.stringify(newChats));
       return newChats;
     });
     setEditingChatId(null);
@@ -747,7 +748,7 @@ export default function App() {
   const handleDeleteChat = (chatId: string) => {
     setChats(prev => {
       const newChats = prev.filter(c => c.id !== chatId);
-      localStorage.setItem('agentic_chats', JSON.stringify(newChats));
+      localStorage.setItem(`agentic_chats_${clerkUserId}`, JSON.stringify(newChats));
       return newChats;
     });
     if (currentChatId === chatId) {
@@ -767,7 +768,7 @@ export default function App() {
       setSavedWorkflows(prev => {
         const newWf = { id: `wf_${Date.now()}`, name: chat.title || "Saved Workflow", dagData: lastSummary.dagData, created_at: Date.now() };
         const updated = [newWf, ...prev];
-        localStorage.setItem('agentic_saved_workflows', JSON.stringify(updated));
+        localStorage.setItem(`agentic_saved_workflows_${clerkUserId}`, JSON.stringify(updated));
         return updated;
       });
       alert(`Workflow "${chat.title}" saved successfully!`);
@@ -823,7 +824,7 @@ export default function App() {
       } else {
         newChats.unshift({ id: currentChatId, title, messages });
       }
-      localStorage.setItem('agentic_chats', JSON.stringify(newChats));
+      localStorage.setItem(`agentic_chats_${clerkUserId}`, JSON.stringify(newChats));
       return newChats;
     });
   }, [messages, currentChatId]);
