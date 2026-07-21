@@ -19,7 +19,7 @@ function MissingClerkKey() {
           display: "flex", alignItems: "center", justifyContent: "center",
           color: "#4ade80", fontSize: 24, fontWeight: 700,
         }}>G</div>
-        <h1 style={{ margin: "0 0 8px", fontSize: 28 }}>Groit AI</h1>
+        <h1 style={{ margin: "0 0 8px", fontSize: 28 }}>Griot AI</h1>
         <p style={{ color: "#7d8590", lineHeight: 1.6 }}>
           Clerk authentication is not configured yet. Create a free app at{" "}
           <a href="https://dashboard.clerk.com" style={{ color: "#58a6ff" }}>dashboard.clerk.com</a>,

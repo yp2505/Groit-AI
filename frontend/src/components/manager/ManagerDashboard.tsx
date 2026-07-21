@@ -4,7 +4,7 @@ import { Box, Typography } from '@mui/material';
 import { CheckCircle2 as CheckCircleIcon, MessageSquare, Github, Kanban, BarChart, Settings, ExternalLink, ShieldAlert, XCircle } from 'lucide-react';
 
 // ── Tool visual helpers (same as developer side) ─────────────────────
-const TOOL_ICONS: Record<string, string> = {
+const TOOL_ICONS: Record<string, JSX.Element> = {
   slack: <MessageSquare size={16} />, github: <Github size={16} />, jira: <Kanban size={16} />, sheets: <BarChart size={16} />, generic: <Settings size={16} />,
 };
 const TOOL_COLORS: Record<string, { bg: string; border: string; text: string }> = {
@@ -214,7 +214,7 @@ function ChatMessage({ msg, onApprove, onReject }: { msg: any; onApprove?: () =>
           fontSize: 12, color: '#166534', fontWeight: 700, flexShrink: 0,
           border: '1px solid #22c55e',
         }}>G</div>
-        <span style={{ color: '#6b7280', fontSize: 12, fontWeight: 600 }}>Groit AI</span>
+        <span style={{ color: '#6b7280', fontSize: 12, fontWeight: 600 }}>Griot AI</span>
       </div>
 
       <div style={{ paddingLeft: 38 }}>
@@ -370,7 +370,7 @@ export default function ManagerDashboardPanel({
           fontWeight: 800, color: '#111827', letterSpacing: '-0.02em',
           mb: 1.5, fontSize: { xs: '1.6rem', md: '2rem' },
         }}>
-          Groit AI Command Center
+          Griot AI Command Center
         </Typography>
 
         <Typography sx={{

@@ -32,7 +32,7 @@ export default function Sidebar() {
           </div>
           <div>
             <h1 className="font-semibold text-sm tracking-tight text-foreground">
-              Groit AI
+              Griot AI
             </h1>
             <p className="text-[10px] text-muted-foreground">Intelligent Orchestration</p>
           </div>

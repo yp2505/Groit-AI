@@ -144,7 +144,7 @@ const SlackDashboard = () => {
                 <Hash size={40} />
               </div>
               <h3 className="text-2xl font-bold text-white">This is the start of the {activeChannel} channel</h3>
-              <p className="text-[#818284]">Workflows sent by Groit AI will appear here in real-time. Try asking "Notify Slack about Jira status" to see it in action.</p>
+              <p className="text-[#818284]">Workflows sent by Griot AI will appear here in real-time. Try asking "Notify Slack about Jira status" to see it in action.</p>
             </div>
           ) : (
             filteredMessages.map((msg: any, idx: number) => {
@@ -169,7 +169,7 @@ const SlackDashboard = () => {
                         <span className="text-[11px] font-medium opacity-40 ml-1">
                           {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
-                        {msg.sender === 'Groit AI' && (
+                        {msg.sender === 'Griot AI' && (
                           <span className="px-1.5 py-0.5 bg-white/10 text-[9px] font-black rounded uppercase tracking-tighter text-white/80">APP</span>
                         )}
                       </div>

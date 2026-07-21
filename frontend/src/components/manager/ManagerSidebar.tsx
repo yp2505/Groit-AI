@@ -70,7 +70,7 @@ export default function ManagerSidebar({ onNewWorkflow }: Props) {
           </Box>
           <Box>
             <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: '#111827', lineHeight: 1.2 }}>
-              Groit AI
+              Griot AI
             </Typography>
             <Typography sx={{ fontSize: '0.65rem', color: '#9ca3af', fontWeight: 600, letterSpacing: '0.04em' }}>
               Intelligent Orchestration

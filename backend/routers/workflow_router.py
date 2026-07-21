@@ -44,7 +44,7 @@ def chat_with_groq(user_input: str, chat_history: list) -> str:
         {
             "role": "system",
             "content": (
-                "You are Groit AI, an intelligent agentic assistant that can execute "
+                "You are Griot AI, an intelligent agentic assistant that can execute "
                 "workflows across Gmail, Slack, GitHub, Jira, Google Calendar, Notion, "
                 "and more via Composio. When users greet you or ask general questions, "
                 "respond helpfully and suggest what workflows you can run for them. "
@@ -71,7 +71,7 @@ def chat_with_groq(user_input: str, chat_history: list) -> str:
         return response.choices[0].message.content or "Hello! How can I help you today?"
     except Exception as e:
         logger.error(f"Groq chat failed: {e}")
-        return "Hello! I'm Groit AI. Tell me a workflow to execute, like 'Send a Slack message to #general' or 'Create a GitHub issue'."
+        return "Hello! I'm Griot AI. Tell me a workflow to execute, like 'Send a Slack message to #general' or 'Create a GitHub issue'."
 
 
 @router.post("/execute")

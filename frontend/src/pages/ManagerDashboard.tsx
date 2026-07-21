@@ -244,7 +244,7 @@ const ManagerDashboard = () => {
             <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-[#22c55e] to-[#10b981] mx-auto mb-6 flex items-center justify-center shadow-xl shadow-green-500/20">
               <Check size={32} className="text-white" />
             </div>
-            <h2 className="text-3xl font-black text-foreground mb-3 tracking-tight">Groit AI Command Center</h2>
+            <h2 className="text-3xl font-black text-foreground mb-3 tracking-tight">Griot AI Command Center</h2>
             <p className="text-muted-foreground text-sm max-w-sm mx-auto font-medium leading-relaxed">
               Describe a workflow to orchestrate Jira, GitHub, Slack, and Sheets simultaneously.
             </p>

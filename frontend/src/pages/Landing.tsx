@@ -82,7 +82,7 @@ const Landing = () => {
             <div style={{ width: 10, height: 10, borderRadius: '50%', background: theme.accent }} />
             <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#2E3640' }} />
           </div>
-          Groit AI
+          Griot AI
         </div>
 
         {/* Nav actions */}

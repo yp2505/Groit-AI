@@ -300,7 +300,7 @@ function ChatMessage({ msg, onEdit, onApprove, onReject }: { msg: any; onEdit: (
           fontSize: 12, color: "#166534", fontWeight: 700, flexShrink: 0,
           border: isDark ? "none" : "1px solid #22c55e"
         }}>G</div>
-        <span style={{ color: isDark ? "#7d8590" : "#656d76", fontSize: 12, fontWeight: 600 }}>Groit AI</span>
+        <span style={{ color: isDark ? "#7d8590" : "#656d76", fontSize: 12, fontWeight: 600 }}>Griot AI</span>
       </div>
       <div style={{ paddingLeft: 38 }}>
         {/* Thinking / status line */}
@@ -1258,7 +1258,7 @@ export default function App() {
               id: "node_1",
               tool: "slack",
               action: "SEND_MESSAGE",
-              params: { channel: "all-groit", text: text },
+              params: { channel: "all-griot", text: text },
               depends_on: [],
               requires_approval: false,
               retry: { max_attempts: 2, backoff_factor: 2, initial_delay: 1, timeout: 15 },
@@ -1402,7 +1402,7 @@ export default function App() {
               <div style={{ width: 10, height: 10, borderRadius: '50%', background: T.accent }} />
               <div style={{ width: 10, height: 10, borderRadius: '50%', background: isDark ? '#2E3640' : '#D1D5DB' }} />
             </div>
-            Groit AI
+            Griot AI
           </div>
 
           <div style={{ display: "flex", gap: 2 }}>
@@ -1590,10 +1590,10 @@ export default function App() {
             )}
             <div style={{ display: "flex", flexDirection: "column", overflow: "hidden", flex: 1 }}>
               <span style={{ fontSize: 13, fontWeight: 600, color: T.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {clerkUser?.fullName || clerkUser?.firstName || "Groit User"}
+                {clerkUser?.fullName || clerkUser?.firstName || "Griot User"}
               </span>
               <span style={{ fontSize: 11, color: T.secondary, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {clerkUser?.primaryEmailAddress?.emailAddress || "user@groit.ai"}
+                {clerkUser?.primaryEmailAddress?.emailAddress || "user@griot.ai"}
               </span>
             </div>
           </button>
@@ -1714,7 +1714,7 @@ export default function App() {
                     lineHeight: 1.2,
                   }}>
                     Hii {clerkUser?.firstName || "User"} ,{" "}
-                    <span style={{ color: T.accent }}>Groit AI</span> Here
+                    <span style={{ color: T.accent }}>Griot AI</span> Here
                   </div>
                   <div style={{ color: T.secondary, fontSize: isMobile ? 14 : 16, textAlign: "center", maxWidth: 600 }}>
                     What workflow would you like to run today?
@@ -1910,7 +1910,7 @@ export default function App() {
                   </div>
                 </div>
                 <p style={{ textAlign: "center", fontSize: 11, color: T.secondary, marginTop: 12 }}>
-                  Groit is AI and can make mistakes.
+                  Griot is AI and can make mistakes.
                 </p>
               </div>
             </div>
@@ -2048,7 +2048,7 @@ export default function App() {
             <div style={{ padding: "20px 24px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div>
                 <h3 style={{ fontSize: 18, fontWeight: 700, color: T.text, margin: "0 0 4px" }}>Available Toolkits</h3>
-                <p style={{ fontSize: 13, color: T.secondary, margin: 0 }}>Connect your favorite apps to give Groit.AI access.</p>
+                <p style={{ fontSize: 13, color: T.secondary, margin: 0 }}>Connect your favorite apps to give Griot.AI access.</p>
               </div>
               <button
                 onClick={() => setShowToolkitModal(false)}
@@ -2204,10 +2204,10 @@ export default function App() {
 
               <div style={{ textAlign: "center" }}>
                 <div style={{ fontSize: 18, fontWeight: 700, color: T.text, marginBottom: 4 }}>
-                  {clerkUser?.fullName || clerkUser?.firstName || "Groit User"}
+                  {clerkUser?.fullName || clerkUser?.firstName || "Griot User"}
                 </div>
                 <div style={{ fontSize: 13, color: T.secondary }}>
-                  {clerkUser?.primaryEmailAddress?.emailAddress || "user@groit.ai"}
+                  {clerkUser?.primaryEmailAddress?.emailAddress || "user@griot.ai"}
                 </div>
               </div>
             </div>

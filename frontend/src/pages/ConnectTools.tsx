@@ -115,7 +115,7 @@ const ConnectTools = () => {
             display: "flex", alignItems: "center", justifyContent: "center",
             color: "#4ade80", fontSize: 12, fontWeight: 700
           }}>G</div>
-          <span style={{ fontSize: 13, fontWeight: 600 }}>Groit AI</span>
+          <span style={{ fontSize: 13, fontWeight: 600 }}>Griot AI</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12 }}>
           <span style={{ color: "#e6edf3", fontWeight: 600 }}>{user?.name}</span>

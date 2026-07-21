@@ -120,7 +120,7 @@ const LoginPage = () => {
             <div style={{ width: 14, height: 14, borderRadius: '50%', background: theme.accent }} />
             <div style={{ width: 14, height: 14, borderRadius: '50%', background: '#2E3640' }} />
           </div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, margin: '0 0 6px', color: theme.textMain, letterSpacing: '-0.5px' }}>Groit AI</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 700, margin: '0 0 6px', color: theme.textMain, letterSpacing: '-0.5px' }}>Griot AI</h1>
         </div>
 
         {/* Card */}

@@ -1,10 +1,10 @@
-# 👾 Groit AI
+# 👾 Griot AI
 
 ### **Retro-Futuristic AI Agent Workspace & MCP Orchestrator**
 
-**Groit AI** is a premium, retro-themed agentic workspace that enables you to execute complex multi-step workflows across your daily apps (GitHub, Slack, Jira, Gmail, Google Sheets, etc.) using natural language commands. 
+**Griot AI** is a premium, retro-themed agentic workspace that enables you to execute complex multi-step workflows across your daily apps (GitHub, Slack, Jira, Gmail, Google Sheets, etc.) using natural language commands. 
 
-Built with a highly responsive user interface and robust backend orchestration, Groit AI acts as your all-in-one terminal for managing external software context effortlessly.
+Built with a highly responsive user interface and robust backend orchestration, Griot AI acts as your all-in-one terminal for managing external software context effortlessly.
 
 ---
 
@@ -24,7 +24,7 @@ Built with a highly responsive user interface and robust backend orchestration, 
 ## 📁 Repository Structure
 
 ```text
-groit/
+griot/
 ├── backend/                       # Python FastAPI Service
 │   ├── main.py                    # Entry point & server configuration
 │   ├── requirements.txt           # Backend dependencies
@@ -90,4 +90,4 @@ npm run dev
 
 ## 🛡️ License
 
-Built for Groit Agentic Workspaces. All rights reserved.
+Built for Griot Agentic Workspaces. All rights reserved.

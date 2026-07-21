@@ -1,7 +1,7 @@
 services:
   # ─── BACKEND (FastAPI) ───
   - type: web
-    name: groit-backend
+    name: griot-backend
     env: python
     rootDir: backend
     buildCommand: "pip install -r requirements.txt"
@@ -13,7 +13,7 @@ services:
 
   # ─── FRONTEND (React/Vite) ───
   - type: web
-    name: groit-frontend
+    name: griot-frontend
     env: static
     rootDir: frontend
     buildCommand: "npm install && npm run build"
@@ -22,5 +22,5 @@ services:
       - key: VITE_API_URL
         fromService:
           type: web
-          name: groit-backend
+          name: griot-backend
           envVarKey: RENDER_EXTERNAL_URL

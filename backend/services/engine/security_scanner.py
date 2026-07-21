@@ -1,7 +1,7 @@
 """
 security_scanner.py
 -------------------
-Pre-execution security layer for Groit AI workflows.
+Pre-execution security layer for Griot AI workflows.
 
 Checks:
   1. URL Safety  — Google Safe Browsing API v4 (free)
@@ -70,7 +70,7 @@ async def scan_urls_for_threats(urls: list[str], api_key: str) -> list[str]:
 
     payload = {
         "client": {
-            "clientId": "groit-ai",
+            "clientId": "griot-ai",
             "clientVersion": "1.0.0"
         },
         "threatInfo": {
@@ -154,7 +154,7 @@ def check_entropy_score(user_id: str, params: dict) -> None:
             raise SecurityViolationError(
                 f"Security limit exceeded: This account has targeted {total_unique} unique "
                 f"recipients in a single session (max: {MAX_UNIQUE_RECIPIENTS_PER_SESSION}). "
-                f"Account activity has been frozen. Contact support@groit.ai to appeal."
+                f"Account activity has been frozen. Contact support@griot.ai to appeal."
             )
 
 
@@ -185,6 +185,6 @@ async def run_security_checks(
             logger.warning(f"SECURITY BLOCK — malicious URLs detected for user {user_id}: {malicious}")
             raise SecurityViolationError(
                 f"Workflow blocked: {len(malicious)} malicious URL(s) detected in your workflow content. "
-                f"This incident has been logged. If you believe this is a mistake, contact support@groit.ai."
+                f"This incident has been logged. If you believe this is a mistake, contact support@griot.ai."
             )
         logger.info("URL scan complete — all URLs are clean.")
