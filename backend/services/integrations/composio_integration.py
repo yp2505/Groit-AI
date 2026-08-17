@@ -299,11 +299,19 @@ async def composio_llm_dispatch(
 
         # Built-in cross-action keyword mappings to catch common model output variations
         BUILTIN_ACTION_KEYWORDS: dict[str, list[str]] = {
+            # GitHub
             "get_closed_issues":  ["issue", "issues", "list_issue", "search_issue"],
-            "draft_email":        ["send_email", "create_draft", "draft"],
+            "get_repo_commits":   ["commit", "commits", "list_commit", "list_repo_commit"],
             "get_recent_activity":["event", "activity", "commit", "push"],
-            "create_event":       ["create_event", "insert_event", "quick_add"],
-            "send_message":       ["chat", "post_message", "send_message"],
+            "get_repo_details":   ["repo", "repository", "get_repo", "repo_info"],
+            # Gmail
+            "draft_email":        ["send_email", "create_draft", "draft"],
+            "send_email":         ["send_email", "send_message"],
+            # Google Calendar
+            "create_event":       ["create_event", "insert_event", "quick_add", "events_insert"],
+            # Slack
+            "post_message":       ["chat", "post_message", "send_message", "chat_post"],
+            "send_message":       ["chat", "post_message", "send_message", "chat_post"],
         }
         builtin_keywords = BUILTIN_ACTION_KEYWORDS.get(clean_action, [])
 

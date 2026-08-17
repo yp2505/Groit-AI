@@ -10,6 +10,9 @@ toolkits:
       send_message:
         - "chat_post_message"
         - "post_message"
+      post_message:
+        - "chat_post_message"
+        - "send_message"
   googlesheets:
     action_synonyms:
       append_row:
@@ -25,10 +28,20 @@ toolkits:
     action_synonyms:
       create_issue:
         - "create_an_issue"
+      get_repo_commits:
+        - "list_commits"
+        - "list_repo_commits"
+        - "get_commits"
+      get_repo_details:
+        - "get_a_repository"
+        - "get_repository"
   googlecalendar:
     action_synonyms:
       create_event:
         - "create_event"
+        - "insert_event"
+        - "events_insert"
+        - "quick_add"
   gmail:
     action_synonyms:
       send_email:
