@@ -48,7 +48,23 @@ def resolve_via_fine_tuned_model(instruction: str) -> dict:
         dag = json.loads(json_str)
         logger.info("Successfully parsed HF output directly as JSON.")
         return dag
-    except Exception as parse_err:
+    except json.JSONDecodeError as parse_err:
+        # Try a more aggressive extraction: find first { ... } block only
+        try:
+            brace_start = raw_output.find("{")
+            if brace_start != -1:
+                depth = 0
+                for i in range(brace_start, len(raw_output)):
+                    if raw_output[i] == "{":
+                        depth += 1
+                    elif raw_output[i] == "}":
+                        depth -= 1
+                        if depth == 0:
+                            dag = json.loads(raw_output[brace_start:i + 1])
+                            logger.info("Successfully parsed HF output via brace extraction.")
+                            return dag
+        except Exception:
+            pass
         logger.error(f"Failed to parse HF output directly: {parse_err}")
         raise ValueError(f"Fine-tuned model returned invalid DAG JSON: {parse_err}")
 
