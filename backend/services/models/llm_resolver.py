@@ -7,6 +7,48 @@ from groq import Groq
 
 logger = logging.getLogger(__name__)
 
+DAG_SYSTEM_PROMPT = """
+You are an AI that converts user requests into JSON workflow DAGs.
+You MUST output ONLY a valid JSON object with EXACTLY this structure — no extra text, no markdown:
+
+{
+  "workflow_name": "Short Name",
+  "nodes": [
+    {
+      "id": "node_1",
+      "tool": "gmail",
+      "action": "SEND_EMAIL",
+      "params": {"to": "user@example.com", "subject": "Hello", "body": "..."},
+      "depends_on": []
+    },
+    {
+      "id": "node_2",
+      "tool": "slack",
+      "action": "POST_MESSAGE",
+      "params": {"channel": "#general", "message": "Done!"},
+      "depends_on": ["node_1"]
+    }
+  ]
+}
+
+RULES:
+1. Output ONLY the JSON object. No explanation, no markdown.
+2. tool must be one of: gmail, slack, github, googlecalendar, notion
+3. action must be ALL CAPS (e.g. SEND_EMAIL, POST_MESSAGE, CREATE_EVENT, CREATE_ISSUE)
+4. Each node must have: id, tool, action, params, depends_on
+5. workflow_name and nodes are REQUIRED at the top level.
+"""
+
+def validate_dag(dag: dict) -> dict:
+    """Validate that the DAG has required top-level fields. Raises ValueError if invalid."""
+    if "workflow_name" not in dag or "nodes" not in dag:
+        raise ValueError(
+            f"DAG missing required fields 'workflow_name' or 'nodes'. Got keys: {list(dag.keys())}"
+        )
+    if not isinstance(dag["nodes"], list) or len(dag["nodes"]) == 0:
+        raise ValueError("DAG 'nodes' must be a non-empty list.")
+    return dag
+
 def extract_json(text: str) -> str:
     match = re.search(r"```(?:json)?\s*([\s\S]*?)```", text)
     if match:
@@ -70,37 +112,17 @@ def resolve_via_fine_tuned_model(instruction: str) -> dict:
 
 def generate_dag_with_groq_fallback(instruction: str) -> dict:
     groq_client = Groq(api_key=settings.GROQ_API_KEY)
-    system_prompt = """You are an agentic AI that plans workflows.
-Given a user request, generate a strictly formatted JSON DAG workflow.
-Use the following format:
-{
-  "workflow_name": "Short Descriptive Name",
-  "nodes": [
-    {
-      "id": "node_1",
-      "tool": "gmail", (e.g. gmail, slack, github, googlecalendar)
-      "action": "SEND_EMAIL", (exact uppercase action name)
-      "params": { ... },
-      "depends_on": []
-    }
-  ]
-}
-RULES:
-1. Output ONLY a valid JSON object.
-2. Action MUST be ALL CAPS.
-3. Infer the correct parameters required for the action.
-"""
     try:
         response = groq_client.chat.completions.create(
             model="openai/gpt-oss-120b",
             temperature=0.1,
             messages=[
-                {"role": "system", "content": system_prompt},
+                {"role": "system", "content": DAG_SYSTEM_PROMPT},
                 {"role": "user", "content": instruction}
             ]
         )
         json_str = extract_json(response.choices[0].message.content or "")
-        return json.loads(json_str)
+        return validate_dag(json.loads(json_str))
     except Exception as e:
         raise ValueError(f"Both HF and Groq fallback failed: {str(e)}")
 
@@ -135,24 +157,4 @@ def generate_dag(instruction: str) -> dict:
             return generate_dag_with_groq_fallback(instruction)
         except Exception as groq_e:
             logger.warning(f"Groq API also failed ({groq_e}). Initiating final OpenRouter fallback!")
-            system_prompt = """You are an agentic AI that plans workflows.
-Given a user request, generate a strictly formatted JSON DAG workflow.
-Use the following format:
-{
-  "workflow_name": "Short Descriptive Name",
-  "nodes": [
-    {
-      "id": "node_1",
-      "tool": "gmail",
-      "action": "SEND_EMAIL",
-      "params": { ... },
-      "depends_on": []
-    }
-  ]
-}
-RULES:
-1. Output ONLY a valid JSON object.
-2. Action MUST be ALL CAPS.
-3. Infer the correct parameters required for the action.
-"""
-            return generate_dag_with_openrouter_fallback(instruction, system_prompt)
+            return generate_dag_with_openrouter_fallback(instruction, DAG_SYSTEM_PROMPT)
