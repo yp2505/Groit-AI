@@ -1,5 +1,6 @@
 defaults:
   prefer_keywords: {}
+  schema_search_limit: 250
   resolver_models:
     - "openai/gpt-oss-120b"
     - "openai/gpt-oss-20b"
