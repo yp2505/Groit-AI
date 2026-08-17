@@ -63,7 +63,7 @@ def chat_with_groq(user_input: str, chat_history: list) -> str:
 
     try:
         response = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-120b",
             temperature=0.7,
             max_tokens=512,
             messages=cast(List[ChatCompletionMessageParam], messages)

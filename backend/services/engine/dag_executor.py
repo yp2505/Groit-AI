@@ -67,7 +67,7 @@ class DAGExecutor:
                     params=resolved_params,
                     user_id=self.user_id,
                     groq_client=groq_client,
-                    model="llama-3.3-70b-versatile"
+                    model="openai/gpt-oss-120b"
                 )
                 
                 if response_dict.get("status") == "error":

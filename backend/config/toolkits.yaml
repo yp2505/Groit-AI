@@ -1,8 +1,8 @@
 defaults:
   prefer_keywords: {}
   resolver_models:
-    - "llama-3.3-70b-versatile"
-    - "gemma2-9b-it"
+    - "openai/gpt-oss-120b"
+    - "openai/gpt-oss-20b"
 
 toolkits:
   slack:
