@@ -263,6 +263,9 @@ async def composio_llm_dispatch(
         # Gmail variants
         "gmail":            "gmail",
         "google_mail":      "gmail",
+        "email_draft":      "gmail",  # model sometimes outputs email_draft instead of gmail
+        "email":            "gmail",
+        "draft_email":      "gmail",
         # Calendar variants
         "googlecalendar":   "googlecalendar",
         "google_calendar":  "googlecalendar",
@@ -293,7 +296,17 @@ async def composio_llm_dispatch(
         safe_action = action or ""
         clean_action = safe_action.lower().replace("-", "_")
         synonyms = [s.lower().replace("-", "_") for s in tool_config.get("action_synonyms", {}).get(clean_action, [])]
-        
+
+        # Built-in cross-action keyword mappings to catch common model output variations
+        BUILTIN_ACTION_KEYWORDS: dict[str, list[str]] = {
+            "get_closed_issues":  ["issue", "issues", "list_issue", "search_issue"],
+            "draft_email":        ["send_email", "create_draft", "draft"],
+            "get_recent_activity":["event", "activity", "commit", "push"],
+            "create_event":       ["create_event", "insert_event", "quick_add"],
+            "send_message":       ["chat", "post_message", "send_message"],
+        }
+        builtin_keywords = BUILTIN_ACTION_KEYWORDS.get(clean_action, [])
+
         tool_schemas = []
         slug_clean = normalized_slug.lower().replace("-", "_")
         
@@ -306,20 +319,21 @@ async def composio_llm_dispatch(
                     if len(part) > 2:
                         clean_name = clean_name.replace(f"{part}_", "").replace(f"_{part}", "")
                 
-                # Check match
+                # Check match: exact, substring, synonyms, or built-in keywords
                 is_match = (
                     clean_name == clean_action or 
                     clean_action in clean_name or 
-                    any(syn == clean_name or syn in clean_name for syn in synonyms)
+                    any(syn == clean_name or syn in clean_name for syn in synonyms) or
+                    any(kw in raw_name for kw in builtin_keywords)
                 )
                 if is_match:
                     tool_schemas.append(schema)
                     
-        # Fallback if filter was too strict (cap at 3 to fit token limits on Groq)
+        # Fallback if filter was too strict (cap at 5 to give LLM more choices)
         if not tool_schemas:
-            tool_schemas = raw_schemas[:3]
+            tool_schemas = raw_schemas[:5]
         else:
-            tool_schemas = tool_schemas[:3]
+            tool_schemas = tool_schemas[:5]
             
     except Exception as fetch_err:
         logger.error(f"composio_llm_dispatch: failed to fetch schemas for '{tool_slug}': {fetch_err}")
