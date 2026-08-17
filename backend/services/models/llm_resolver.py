@@ -87,10 +87,10 @@ def resolve_via_fine_tuned_model(instruction: str) -> dict:
     # 2. Parse directly from the HF model
     try:
         json_str = extract_json(raw_output)
-        dag = json.loads(json_str)
+        dag = validate_dag(json.loads(json_str))
         logger.info("Successfully parsed HF output directly as JSON.")
         return dag
-    except json.JSONDecodeError as parse_err:
+    except (json.JSONDecodeError, ValueError) as parse_err:
         # Try a more aggressive extraction: find first { ... } block only
         try:
             brace_start = raw_output.find("{")
@@ -102,7 +102,7 @@ def resolve_via_fine_tuned_model(instruction: str) -> dict:
                     elif raw_output[i] == "}":
                         depth -= 1
                         if depth == 0:
-                            dag = json.loads(raw_output[brace_start:i + 1])
+                            dag = validate_dag(json.loads(raw_output[brace_start:i + 1]))
                             logger.info("Successfully parsed HF output via brace extraction.")
                             return dag
         except Exception:
