@@ -28,9 +28,8 @@ def extract_json(text: str) -> str:
 
 def resolve_via_fine_tuned_model(instruction: str) -> dict:
     """
-    1. Calls the fine-tuned Llama model on Hugging Face Spaces via gradio_client.
-    2. Uses Groq as a fast schema-translation layer to ensure the output strictly 
-       matches the Composio WorkflowDAG schema (tool, action, params).
+    Calls the fine-tuned Llama model on Hugging Face Spaces via gradio_client.
+    Expects the model to output a strict Composio WorkflowDAG schema.
     """
     logger.info(f"Calling fine-tuned model for instruction: {instruction}")
     
@@ -43,52 +42,15 @@ def resolve_via_fine_tuned_model(instruction: str) -> dict:
         logger.error(f"Fine-tuned model route failed: {e}")
         raise ValueError(f"Hugging Face Space failed: {str(e)}")
 
-    # 2. Translate using Groq API
-    if not settings.GROQ_API_KEY or settings.GROQ_API_KEY == "your_groq_api_key_here":
-        raise ValueError("GROQ_API_KEY is required to standardize the DAG schema for Composio.")
-
-    system_prompt = """You are a schema translation layer. A fine-tuned model generated the following DAG output.
-It may be invalid JSON, have missing brackets, or use keys like 'arguments' instead of 'params'. 
-Your job is to translate it into the STRICT Composio Execution JSON structure:
-
-{
-  "workflow_name": "Short Descriptive Name",
-  "nodes": [
-    {
-      "id": "node_1",
-      "tool": "gmail", (e.g. gmail, slack, github, googlecalendar)
-      "action": "SEND_EMAIL", (e.g. SEND_EMAIL, CREATE_EVENT, SEND_MESSAGE, CREATE_ISSUE)
-      "params": { ... }, (rename 'arguments' or 'inputs' to 'params')
-      "depends_on": []
-    }
-  ]
-}
-
-RULES:
-1. Output ONLY a valid JSON object. No markdown blocks or explanations.
-2. Infer the best exact Composio 'action' based on the tool and arguments. Action MUST be ALL CAPS.
-3. If the input is cut off, intelligently complete the JSON structure.
-"""
-
+    # 2. Parse directly from the HF model
     try:
-        groq_client = Groq(api_key=settings.GROQ_API_KEY)
-        response = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            temperature=0.1,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Instruction: {instruction}\n\nHF Output:\n{raw_output}"}
-            ]
-        )
-        
-        translated_json_str = extract_json(response.choices[0].message.content or "")
-        translated_dag = json.loads(translated_json_str)
-        logger.info("Successfully translated HF output via Groq.")
-        return translated_dag
-        
-    except Exception as e:
-        logger.error(f"Groq schema translation failed: {e}")
-        raise ValueError(f"Failed to parse or translate DAG: {str(e)}")
+        json_str = extract_json(raw_output)
+        dag = json.loads(json_str)
+        logger.info("Successfully parsed HF output directly as JSON.")
+        return dag
+    except Exception as parse_err:
+        logger.error(f"Failed to parse HF output directly: {parse_err}")
+        raise ValueError(f"Fine-tuned model returned invalid DAG JSON: {parse_err}")
 
 def generate_dag_with_groq_fallback(instruction: str) -> dict:
     groq_client = Groq(api_key=settings.GROQ_API_KEY)
@@ -137,6 +99,7 @@ def generate_dag_with_openrouter_fallback(instruction: str, system_prompt: str) 
         response = openrouter_client.chat.completions.create(
             model="openai/gpt-4o-mini",
             temperature=0.1,
+            max_tokens=1000,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": instruction}
